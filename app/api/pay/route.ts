@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     // Validate request body
     if (!nominationId || !voterName || !voterEmail || !numberOfVotes) {
       return NextResponse.json(
-        { error: "Missing required fields: nominationId, voterName, voterEmail, and numberOfVotes are required." },
+        { error: `Missing required fields. Received body: ${JSON.stringify(body)}` },
         { status: 400 }
       );
     }
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const votePrice = settings?.vote_price_naira ?? 100; // Default to 100 if missing
-    const isVotingOpen = settings?.voting_open ?? false;
+    const isVotingOpen = settings?.voting_open ?? true;
 
     // Verify that voting is still open
     if (!isVotingOpen) {

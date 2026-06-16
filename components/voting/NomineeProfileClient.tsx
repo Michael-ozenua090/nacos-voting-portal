@@ -2,47 +2,52 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Share2, Monitor, Crown, Code2, Lightbulb, Shirt, GraduationCap, Trophy, Sparkles, Laptop } from "lucide-react";
-import { notFound } from "next/navigation";
+import { Share2, Monitor } from "lucide-react";
 import TopAppBar from "@/components/layout/TopAppBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import VoteModal from "@/components/voting/VoteModal";
-import {
-  getNomineeBySlug,
-  getCategoriesForNominee,
-  getCategoryById,
-  getVotesForNomineeInCategory,
-  formatVotes,
-  nominees,
-} from "@/lib/mockData";
-import type { Category, Nominee } from "@/lib/mockData";
 
-const iconMap: Record<string, React.ElementType> = {
-  Monitor, Crown, Code2, Lightbulb, Shirt, GraduationCap, Trophy, Sparkles, Laptop,
+// Formats a large number (e.g., 1200 -> 1.2k)
+export const formatVotes = (votes: number): string => {
+  if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
+  if (votes >= 1000) return (votes / 1000).toFixed(1) + "k";
+  return votes.toString();
 };
+
+interface NomineeProps {
+  name: string;
+  imageUrl: string | null;
+  quote: string | null;
+  levelDept: string;
+}
+
+interface CategoryProps {
+  nominationId: string;
+  currentVotes: number;
+  categoryId: string;
+  name: string;
+  description: string;
+}
 
 interface VoteModalState {
   open: boolean;
-  category: Category | null;
+  category: CategoryProps | null;
 }
 
-// This is a client component so we receive slug via props
 export default function NomineeProfileClient({
-  slug,
+  nominee,
+  categories,
 }: {
-  slug: string;
+  nominee: NomineeProps;
+  categories: CategoryProps[];
 }) {
-  const nominee = getNomineeBySlug(slug);
-  if (!nominee) return notFound();
-
-  const nominatedCategories = getCategoriesForNominee(nominee.id);
   const [modal, setModal] = useState<VoteModalState>({
     open: false,
     category: null,
   });
 
-  const openModal = (category: Category) => {
+  const openModal = (category: CategoryProps) => {
     setModal({ open: true, category });
   };
 
@@ -55,6 +60,8 @@ export default function NomineeProfileClient({
     }
   };
 
+  const fallbackImage = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61";
+
   return (
     <>
       <TopAppBar />
@@ -65,7 +72,7 @@ export default function NomineeProfileClient({
             {/* Photo */}
             <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-lg mb-4 ring-4 ring-white">
               <Image
-                src={nominee.imageUrl}
+                src={nominee.imageUrl || fallbackImage}
                 alt={nominee.name}
                 fill
                 className="object-cover object-top"
@@ -81,7 +88,7 @@ export default function NomineeProfileClient({
 
             {/* Quote */}
             <blockquote className="text-gray-500 font-body text-sm italic leading-relaxed max-w-xs mb-5">
-              &ldquo;{nominee.quote}&rdquo;
+              &ldquo;{nominee.quote || "Support me to win this award!"}&rdquo;
             </blockquote>
 
             {/* Share button */}
@@ -102,13 +109,12 @@ export default function NomineeProfileClient({
         </h2>
 
         <div className="space-y-3">
-          {nominatedCategories.map((category) => {
-            const Icon = iconMap[category.icon] ?? Monitor;
-            const votes = getVotesForNomineeInCategory(nominee.id, category.id);
+          {categories.map((category) => {
+            const Icon = Monitor; // Using a default icon since DB doesn't have an icon column
 
             return (
               <div
-                key={category.id}
+                key={category.categoryId}
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
               >
                 <div className="p-4">
@@ -127,7 +133,7 @@ export default function NomineeProfileClient({
                         {/* Gold vote badge */}
                         <span className="flex-shrink-0 bg-nacos-gold rounded-full px-2.5 py-1 text-xs font-bold font-body text-gray-800 flex items-center gap-1 whitespace-nowrap">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                          {formatVotes(votes)} Votes
+                          {formatVotes(category.currentVotes)} Votes
                         </span>
                       </div>
                       <p className="text-xs text-gray-400 font-body mt-0.5 line-clamp-2">
@@ -138,7 +144,7 @@ export default function NomineeProfileClient({
 
                   {/* Vote button */}
                   <button
-                    id={`nominee-vote-${category.id}`}
+                    id={`nominee-vote-${category.categoryId}`}
                     onClick={() => openModal(category)}
                     className="w-full border border-gray-200 hover:border-nacos-green hover:bg-nacos-green hover:text-white text-nacos-green font-heading font-semibold py-2.5 rounded-xl text-sm transition-all duration-200"
                   >
@@ -148,18 +154,24 @@ export default function NomineeProfileClient({
               </div>
             );
           })}
+          {categories.length === 0 && (
+            <p className="text-sm text-gray-500 font-body text-center py-6">
+              No categories nominated yet.
+            </p>
+          )}
         </div>
       </main>
       <Footer />
       <BottomNav />
 
-      {/* VoteModal — receives correct category context for each nomination */}
+      {/* VoteModal */}
       {modal.category && (
         <VoteModal
           isOpen={modal.open}
           onClose={() => setModal({ open: false, category: null })}
-          nominee={nominee}
-          category={modal.category}
+          nominee={{ name: nominee.name, imageUrl: nominee.imageUrl || fallbackImage }}
+          category={{ name: modal.category.name }}
+          nominationId={modal.category.nominationId}
         />
       )}
     </>

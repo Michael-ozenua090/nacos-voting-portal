@@ -1,31 +1,64 @@
-import { BarChart2, TrendingUp, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import LivePulse from "@/components/ui/LivePulse";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
-import {
-  categories,
-  getNomineeById,
-  formatVotes,
-} from "@/lib/mockData";
+import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "Standings Leaderboard",
   description: "Live vote standings across all NACOS Award Night categories.",
 };
 
-export default function LeaderboardPage() {
-  const totalVotes = categories
-    .flatMap((c) => c.nominees)
-    .reduce((sum, n) => sum + n.votes, 0);
+// Revalidate every 30 seconds for live-ish feeling without hammering DB too hard
+export const revalidate = 30;
 
-  const mostActiveCategory = categories.reduce((prev, cur) => {
-    const prevTotal = prev.nominees.reduce((s, n) => s + n.votes, 0);
-    const curTotal = cur.nominees.reduce((s, n) => s + n.votes, 0);
-    return curTotal > prevTotal ? cur : prev;
-  });
+const formatVotes = (votes: number): string => {
+  if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
+  if (votes >= 1000) return (votes / 1000).toFixed(1) + "k";
+  return votes.toString();
+};
+
+export default async function LeaderboardPage() {
+  const supabase = await createClient();
+
+  const { data: categories } = await supabase
+    .from("categories")
+    .select(`
+      id,
+      name,
+      nominations (
+        id,
+        current_votes,
+        contestants (
+          id,
+          name,
+          slug,
+          image_url
+        )
+      )
+    `);
+
+  const validCategories = categories || [];
+
+  // Calculate stats
+  let totalVotes = 0;
+  let mostActiveCategory = validCategories[0] || { name: "N/A" };
+  let maxCategoryVotes = 0;
+
+  for (const cat of validCategories) {
+    const catVotes = (cat.nominations || []).reduce(
+      (sum: number, nom: { current_votes: number | null }) => sum + (nom.current_votes || 0),
+      0
+    );
+    totalVotes += catVotes;
+    if (catVotes > maxCategoryVotes) {
+      maxCategoryVotes = catVotes;
+      mostActiveCategory = cat;
+    }
+  }
 
   return (
     <>
@@ -76,12 +109,12 @@ export default function LeaderboardPage() {
 
         {/* Category leaderboard cards */}
         <div className="space-y-4">
-          {categories.map((category) => {
-            const sorted = [...category.nominees].sort(
-              (a, b) => b.votes - a.votes
+          {validCategories.map((category) => {
+            const sortedNoms = [...(category.nominations || [])].sort(
+              (a: { current_votes: number | null }, b: { current_votes: number | null }) => (b.current_votes || 0) - (a.current_votes || 0)
             );
-            const topThree = sorted.slice(0, 3);
-            const maxVotes = topThree[0]?.votes ?? 1;
+            const topThree = sortedNoms.slice(0, 3);
+            const maxVotes = topThree[0]?.current_votes || 1; // prevent divide by zero
 
             return (
               <div
@@ -97,16 +130,23 @@ export default function LeaderboardPage() {
 
                 {/* Nominees */}
                 <div className="p-4 space-y-4">
-                  {topThree.map((entry, idx) => {
-                    const nominee = getNomineeById(entry.nomineeId);
-                    if (!nominee) return null;
+                  {topThree.length === 0 && (
+                    <p className="text-sm text-gray-500 font-body text-center py-2">
+                      No nominations for this category yet.
+                    </p>
+                  )}
+                  {topThree.map((nom: { id: string; current_votes: number | null; contestants: { name: string; slug: string; image_url: string | null } | null }, idx) => {
+                    const contestant = nom.contestants;
+                    if (!contestant) return null;
                     const rank = idx + 1;
-                    const percentage = Math.round(
-                      (entry.votes / maxVotes) * 100
-                    );
+                    const votes = nom.current_votes || 0;
+                    
+                    // Simple logic to generate initials
+                    const nameParts = contestant.name.split(" ");
+                    const initials = (nameParts[0]?.[0] || "") + (nameParts[1]?.[0] || "");
 
                     return (
-                      <div key={entry.nomineeId} className="flex items-center gap-3">
+                      <div key={nom.id} className="flex items-center gap-3">
                         {/* Rank */}
                         <span
                           className={`w-6 font-heading font-bold text-base flex-shrink-0 ${
@@ -128,7 +168,7 @@ export default function LeaderboardPage() {
                               : "bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {nominee.initials}
+                          {initials.toUpperCase()}
                         </div>
 
                         {/* Name + bar */}
@@ -136,19 +176,17 @@ export default function LeaderboardPage() {
                           <div className="flex items-center justify-between mb-1 gap-2">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="text-sm font-body font-semibold text-gray-800 truncate">
-                                {nominee.name.split(" ")[0]}{" "}
-                                {nominee.name.split(" ").slice(1).join(" ")[0]}.
+                                <a href={`/nominee/${contestant.slug}`} className="hover:underline">
+                                  {nameParts[0]} {nameParts.slice(1).join(" ")[0] || ""}.
+                                </a>
                               </span>
-                              {rank === 1 && (
+                              {rank === 1 && votes > 0 && (
                                 <span className="text-[10px] font-bold font-body text-nacos-green bg-nacos-green/10 px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
                                   LEADING
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-1 flex-shrink-0">
-                              {entry.trending && (
-                                <TrendingUp size={12} className="text-nacos-green" />
-                              )}
                               <span
                                 className={`font-heading font-bold text-sm tabular-nums ${
                                   rank === 1
@@ -156,17 +194,11 @@ export default function LeaderboardPage() {
                                     : "text-gray-700"
                                 }`}
                               >
-                                {formatVotes(entry.votes)}
+                                {formatVotes(votes)}
                               </span>
                             </div>
                           </div>
-                          <VoteProgressBar value={entry.votes} max={maxVotes} />
-                          {entry.trending && (
-                            <p className="text-[10px] font-bold font-body text-nacos-green mt-0.5 flex items-center gap-0.5">
-                              <TrendingUp size={9} />
-                              TRENDING
-                            </p>
-                          )}
+                          <VoteProgressBar value={votes} max={maxVotes} />
                         </div>
                       </div>
                     );

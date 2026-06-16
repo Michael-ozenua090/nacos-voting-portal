@@ -11,6 +11,7 @@ import VoteModal from "@/components/voting/VoteModal";
 interface NomineeCardProps {
   nominee: Nominee;
   category: Category;
+  nominationId: string;
   votes: number;
   rank?: number;
   priority?: boolean;
@@ -19,6 +20,7 @@ interface NomineeCardProps {
 export default function NomineeCard({
   nominee,
   category,
+  nominationId,
   votes,
   rank,
   priority = false,
@@ -133,6 +135,7 @@ export default function NomineeCard({
         onClose={() => setModalOpen(false)}
         nominee={nominee}
         category={category}
+        nominationId={nominationId}
       />
     </>
   );

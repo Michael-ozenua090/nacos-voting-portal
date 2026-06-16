@@ -3,28 +3,43 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, Minus, Plus, User, Mail, CreditCard, Lock } from "lucide-react";
-import type { Nominee, Category } from "@/lib/mockData";
-import { formatCurrency } from "@/lib/mockData";
 
+// Updated props to avoid mockData
 export interface VoteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  nominee: Nominee;
-  category: Category;
+  nominee: {
+    name: string;
+    imageUrl: string;
+  };
+  category: {
+    name: string;
+  };
+  nominationId: string;
 }
 
-const VOTE_PRICE = 100; // ₦ per vote
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+  }).format(amount);
+};
+
+const VOTE_PRICE = 100; // Default UI fallback if API uses something else, or we could fetch it
 
 export default function VoteModal({
   isOpen,
   onClose,
   nominee,
   category,
+  nominationId,
 }: VoteModalProps) {
   const [voteCount, setVoteCount] = useState(1);
   const [voterName, setVoterName] = useState("");
   const [voterEmail, setVoterEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -36,10 +51,51 @@ export default function VoteModal({
   const handlePay = async () => {
     if (!voterName.trim() || !voterEmail.trim()) return;
     setIsLoading(true);
-    // TODO: Integrate Flutterwave payment here
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
-    onClose();
+    setError(null);
+
+    if (!nominationId) {
+      setError("System error: Missing nomination ID. Please refresh the page.");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!voteCount) {
+      setError("System error: Vote count is invalid.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const payload = {
+        nominationId,
+        voterName: voterName.trim(),
+        voterEmail: voterEmail.trim(),
+        numberOfVotes: voteCount,
+      };
+      
+      console.log("Sending payload to /api/pay:", payload);
+
+      const res = await fetch("/api/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Payment initiation failed");
+      }
+
+      if (data.link) {
+        window.location.href = data.link; // Redirect to Flutterwave checkout
+      } else {
+        throw new Error("No payment link returned");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -71,7 +127,7 @@ export default function VoteModal({
         <div className="flex flex-col items-center pt-8 pb-5 px-6 border-b border-gray-100">
           <div className="relative w-20 h-20 rounded-2xl overflow-hidden shadow-md mb-3">
             <Image
-              src={nominee.imageUrl}
+              src={nominee.imageUrl || "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61"}
               alt={nominee.name}
               fill
               className="object-cover"
@@ -87,6 +143,13 @@ export default function VoteModal({
         </div>
 
         <div className="px-6 py-5 space-y-4">
+          {/* Error display */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-body text-center">
+              {error}
+            </div>
+          )}
+
           {/* Vote stepper */}
           <div className="bg-gray-50 rounded-2xl p-4">
             <p className="text-center text-xs font-bold font-body tracking-widest text-gray-500 uppercase mb-3">
@@ -166,7 +229,7 @@ export default function VoteModal({
             className="w-full flex items-center justify-center gap-2.5 bg-nacos-green hover:bg-nacos-dark text-white font-heading font-semibold py-4 rounded-2xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-nacos-green/25"
           >
             <CreditCard size={18} />
-            {isLoading ? "Processing..." : "Pay with Flutterwave"}
+            {isLoading ? "Initiating Payment..." : "Pay with Flutterwave"}
           </button>
 
           {/* Cancel */}
