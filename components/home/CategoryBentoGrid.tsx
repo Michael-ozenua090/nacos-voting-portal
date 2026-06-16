@@ -1,23 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
-import { Monitor, Users, BookOpen, Dumbbell } from "lucide-react";
-import { categoryGroups } from "@/lib/mockData";
+import { Monitor } from "lucide-react";
+import { createClient } from "@/utils/supabase/server";
 
-const iconMap: Record<string, React.ElementType> = {
-  Monitor,
-  Users,
-  BookOpen,
-  Dumbbell,
-};
+export default async function CategoryBentoGrid() {
+  const supabase = await createClient();
 
-const iconBgColors: Record<string, string> = {
-  "grp-tech": "bg-nacos-green",
-  "grp-social": "bg-emerald-500",
-  "grp-academic": "bg-gray-700",
-  "grp-sports": "bg-nacos-gold",
-};
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name, description");
 
-export default function CategoryBentoGrid() {
+  const validCategories = categories || [];
+
   return (
     <section className="px-4">
       <div className="flex items-center gap-2 mb-4">
@@ -43,50 +36,38 @@ export default function CategoryBentoGrid() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {categoryGroups.map((group) => {
-          const Icon = iconMap[group.icon] ?? Monitor;
-          const iconBg = iconBgColors[group.id] ?? "bg-nacos-green";
-          const textColor =
-            group.id === "grp-sports" ? "text-gray-900" : "text-white";
+        {validCategories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/categories/${category.id}`}
+            id={`category-card-${category.id}`}
+            className="relative rounded-2xl overflow-hidden h-[110px] flex items-end group shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-nacos-green to-emerald-700"
+          >
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/50" />
 
-          return (
-            <Link
-              key={group.id}
-              href={`/categories?group=${group.id}`}
-              id={`category-group-${group.id}`}
-              className="relative rounded-2xl overflow-hidden h-[110px] flex items-end group shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              {/* Background image */}
-              <Image
-                src={group.imageUrl}
-                alt={group.name}
-                fill
-                className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority={true}
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
-
-              {/* Content */}
-              <div className="relative z-10 flex items-center gap-3 p-4">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}
-                >
-                  <Icon size={18} className={textColor} />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold text-white text-[15px] leading-tight">
-                    {group.name}
-                  </h3>
-                  <p className="text-white/70 text-xs font-body leading-tight mt-0.5">
-                    {group.description}
-                  </p>
-                </div>
+            {/* Content */}
+            <div className="relative z-10 flex items-center gap-3 p-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/20 backdrop-blur-sm">
+                <Monitor size={18} className="text-white" />
               </div>
-            </Link>
-          );
-        })}
+              <div>
+                <h3 className="font-heading font-bold text-white text-[15px] leading-tight">
+                  {category.name}
+                </h3>
+                <p className="text-white/70 text-xs font-body leading-tight mt-0.5">
+                  {category.description || "Vote for your favourite nominee!"}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+
+        {validCategories.length === 0 && (
+          <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-200 rounded-3xl">
+            <p className="text-gray-500 font-body">No categories available yet.</p>
+          </div>
+        )}
       </div>
     </section>
   );

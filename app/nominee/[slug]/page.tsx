@@ -56,21 +56,18 @@ export default async function NomineePage({ params }: Props) {
     .eq("contestant_id", nominee.id);
 
   // Parse and map data for the client component
-  const mappedCategories = (nominations || []).map((nom: {
-    id: string;
-    current_votes: number | null;
-    categories: {
-      id: string;
-      name: string;
-      description: string | null;
-    } | null;
-  }) => ({
-    nominationId: nom.id,
-    currentVotes: nom.current_votes,
-    categoryId: nom.categories.id,
-    name: nom.categories.name,
-    description: nom.categories.description,
-  }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mappedCategories = (nominations || []).map((nom: any) => {
+    // Supabase returns single FK joins as objects (not arrays) at runtime
+    const cat = nom.categories;
+    return {
+      nominationId: nom.id,
+      currentVotes: nom.current_votes ?? 0,
+      categoryId: cat?.id ?? "",
+      name: cat?.name ?? "Unknown Category",
+      description: cat?.description ?? "",
+    };
+  });
 
   const nomineeData = {
     name: nominee.name,

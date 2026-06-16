@@ -1,20 +1,36 @@
 import Link from "next/link";
-import { BarChart2, TrendingUp } from "lucide-react";
-import {
-  categories,
-  nominees,
-  getNomineeById,
-  formatVotes,
-} from "@/lib/mockData";
+import { BarChart2 } from "lucide-react";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
+import { createClient } from "@/utils/supabase/server";
 
-// Show snippets for Mr. NACOS and Tech Bro of the Year
-const FEATURED_CATEGORY_IDS = ["cat-002", "cat-001"];
+const formatVotes = (votes: number): string => {
+  if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
+  if (votes >= 1000) return (votes / 1000).toFixed(1) + "k";
+  return votes.toString();
+};
 
-export default function LiveLeaderboardSnippet() {
-  const featuredCategories = FEATURED_CATEGORY_IDS.map((id) =>
-    categories.find((c) => c.id === id)
-  ).filter(Boolean) as typeof categories;
+export default async function LiveLeaderboardSnippet() {
+  const supabase = await createClient();
+
+  // Fetch first 2 categories with their nominations and contestants
+  const { data: categories } = await supabase
+    .from("categories")
+    .select(`
+      id,
+      name,
+      nominations (
+        id,
+        current_votes,
+        contestants (
+          id,
+          name,
+          slug
+        )
+      )
+    `)
+    .limit(2);
+
+  const validCategories = categories || [];
 
   return (
     <section className="px-4">
@@ -26,17 +42,18 @@ export default function LiveLeaderboardSnippet() {
           </h2>
         </div>
         <span className="text-xs text-gray-400 font-body">
-          Last updated 2 mins ago
+          Live data
         </span>
       </div>
 
       <div className="space-y-3">
-        {featuredCategories.map((category) => {
-          const sorted = [...category.nominees].sort(
-            (a, b) => b.votes - a.votes
+        {validCategories.map((category) => {
+          const sortedNoms = [...(category.nominations || [])].sort(
+            (a: { current_votes: number | null }, b: { current_votes: number | null }) =>
+              (b.current_votes || 0) - (a.current_votes || 0)
           );
-          const topThree = sorted.slice(0, 3);
-          const maxVotes = topThree[0]?.votes ?? 1;
+          const topThree = sortedNoms.slice(0, 3);
+          const maxVotes = topThree[0]?.current_votes || 1;
 
           return (
             <div
@@ -49,12 +66,13 @@ export default function LiveLeaderboardSnippet() {
                 </p>
               </div>
               <div className="p-4 space-y-3">
-                {topThree.map((entry, idx) => {
-                  const nominee = getNomineeById(entry.nomineeId);
-                  if (!nominee) return null;
+                {topThree.map((nom: any, idx: number) => {
+                  const contestant = nom.contestants;
+                  if (!contestant) return null;
                   const rank = idx + 1;
+                  const votes = nom.current_votes || 0;
                   return (
-                    <div key={entry.nomineeId} className="flex items-center gap-3">
+                    <div key={nom.id} className="flex items-center gap-3">
                       {/* Rank */}
                       <span
                         className={`w-5 text-sm font-heading font-bold flex-shrink-0 ${
@@ -69,30 +87,38 @@ export default function LiveLeaderboardSnippet() {
                       {/* Name + bar */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-body font-medium text-gray-800 truncate">
-                            {nominee.name}
-                          </span>
+                          <Link
+                            href={`/nominee/${contestant.slug}`}
+                            className="text-sm font-body font-medium text-gray-800 truncate hover:text-nacos-green transition-colors"
+                          >
+                            {contestant.name}
+                          </Link>
                           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                            {entry.trending && (
-                              <TrendingUp
-                                size={12}
-                                className="text-nacos-green"
-                              />
-                            )}
                             <span className="text-sm font-heading font-bold text-gray-700 tabular-nums">
-                              {formatVotes(entry.votes)}
+                              {formatVotes(votes)}
                             </span>
                           </div>
                         </div>
-                        <VoteProgressBar value={entry.votes} max={maxVotes} />
+                        <VoteProgressBar value={votes} max={maxVotes} />
                       </div>
                     </div>
                   );
                 })}
+                {topThree.length === 0 && (
+                  <p className="text-sm text-gray-500 font-body text-center py-2">
+                    No nominations yet.
+                  </p>
+                )}
               </div>
             </div>
           );
         })}
+
+        {validCategories.length === 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+            <p className="text-sm text-gray-500 font-body">No categories available yet.</p>
+          </div>
+        )}
       </div>
 
       <Link

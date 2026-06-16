@@ -4,13 +4,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { Share2 } from "lucide-react";
 import { useState } from "react";
-import type { Nominee, Category } from "@/lib/mockData";
-import { formatVotes } from "@/lib/mockData";
 import VoteModal from "@/components/voting/VoteModal";
 
+const formatVotes = (votes: number): string => {
+  if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
+  if (votes >= 1000) return (votes / 1000).toFixed(1) + "k";
+  return votes.toLocaleString("en-NG");
+};
+
 interface NomineeCardProps {
-  nominee: Nominee;
-  category: Category;
+  nominee: {
+    id: string;
+    slug: string;
+    name: string;
+    level: string;
+    department: string;
+    imageUrl: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
   nominationId: string;
   votes: number;
   rank?: number;
@@ -36,13 +50,15 @@ export default function NomineeCard({
     }
   };
 
+  const fallbackImage = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61";
+
   return (
     <>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
         {/* Photo area */}
         <div className="relative h-56 bg-gray-100">
           <Image
-            src={nominee.imageUrl}
+            src={nominee.imageUrl || fallbackImage}
             alt={nominee.name}
             fill
             className="object-cover object-top group-hover:scale-[1.02] transition-transform duration-300"
@@ -133,8 +149,8 @@ export default function NomineeCard({
       <VoteModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        nominee={nominee}
-        category={category}
+        nominee={{ name: nominee.name, imageUrl: nominee.imageUrl || fallbackImage }}
+        category={{ name: category.name }}
         nominationId={nominationId}
       />
     </>

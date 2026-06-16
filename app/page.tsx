@@ -6,7 +6,7 @@ import LiveLeaderboardSnippet from "@/components/home/LiveLeaderboardSnippet";
 import CategoryBentoGrid from "@/components/home/CategoryBentoGrid";
 import { Search } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <>
       <TopAppBar />
