@@ -42,7 +42,7 @@ export default function CategoryBentoGrid() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {categoryGroups.map((group) => {
           const Icon = iconMap[group.icon] ?? Monitor;
           const iconBg = iconBgColors[group.id] ?? "bg-nacos-green";
@@ -63,6 +63,7 @@ export default function CategoryBentoGrid() {
                 fill
                 className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                priority={true}
               />
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />

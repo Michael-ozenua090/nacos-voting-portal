@@ -30,7 +30,7 @@ export default function LeaderboardPage() {
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4">
+      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Live badge */}
         <div className="flex items-center gap-3 mb-2">
           <LivePulse color="red" label="Live Updates" />

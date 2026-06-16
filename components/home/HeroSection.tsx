@@ -10,8 +10,8 @@ export default function HeroSection() {
         alt="NACOS Awards Night atmosphere"
         fill
         className="object-cover"
-        priority
-        sizes="100vw"
+        priority={true}
+        sizes="(max-width: 1024px) 100vw, 80vw"
       />
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/80" />

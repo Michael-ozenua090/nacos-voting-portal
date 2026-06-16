@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
   return (
     <>
       <TopAppBar isAdmin />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4">
+      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Page heading */}
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-gray-900">
@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-1 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total Revenue */}
           <StatCard
             title="Total Revenue"

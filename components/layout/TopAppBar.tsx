@@ -21,12 +21,12 @@ export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Left: hamburger (mobile) */}
         <button
           id="top-bar-menu"
           onClick={() => setMobileMenuOpen((o) => !o)}
-          className="md:hidden p-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          className="lg:hidden p-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
           aria-label="Open menu"
         >
           <Menu size={20} />
@@ -43,7 +43,7 @@ export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
 
         {/* Desktop nav links */}
         {!isAdmin && (
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map(({ href, label }) => {
               const isActive =
                 href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -85,7 +85,7 @@ export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
 
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && !isAdmin && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-3 animate-slide-up">
+        <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-3 animate-slide-up">
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}

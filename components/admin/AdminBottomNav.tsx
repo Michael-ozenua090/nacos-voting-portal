@@ -15,7 +15,7 @@ export default function AdminBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-gray-100 shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-100 shadow-lg">
       <div className="grid grid-cols-4 h-16">
         {adminNavItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname.startsWith(href);

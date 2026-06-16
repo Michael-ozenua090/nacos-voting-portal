@@ -44,7 +44,7 @@ export default async function CategoryPage({ params }: Props) {
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4">
+      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Back link */}
         <Link
           href="/categories"
@@ -71,7 +71,7 @@ export default async function CategoryPage({ params }: Props) {
         </div>
 
         {/* Nominees grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedNominees.map((entry, idx) => {
             const nominee = getNomineeById(entry.nomineeId);
             if (!nominee) return null;
@@ -82,6 +82,7 @@ export default async function CategoryPage({ params }: Props) {
                 category={category}
                 votes={entry.votes}
                 rank={idx + 1}
+                priority={idx < 4}
               />
             );
           })}

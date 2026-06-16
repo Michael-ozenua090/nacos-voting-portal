@@ -58,7 +58,7 @@ export default function NomineeProfileClient({
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4">
+      <main className="pb-24 lg:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Campaign hero card */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center bg-gradient-to-b from-nacos-green/5 to-white">
