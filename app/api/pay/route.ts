@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     // Fetch the global vote price and voting status from the system_settings table
     const { data: settings, error: settingsError } = await supabase
       .from("system_settings")
-      .select("vote_price, voting_open")
+      .select("vote_price_naira, voting_open")
       .single();
 
     if (settingsError && settingsError.code !== "PGRST116") {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch system settings" }, { status: 500 });
     }
 
-    const votePrice = settings?.vote_price ?? 100; // Default to 100 if missing
+    const votePrice = settings?.vote_price_naira ?? 100; // Default to 100 if missing
     const isVotingOpen = settings?.voting_open ?? false;
 
     // Verify that voting is still open
