@@ -1,39 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Mail, Lock, Eye, EyeOff, LogIn, AlertTriangle } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+import { loginAction } from "./actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("return_to") ?? "/admin/dashboard";
-  const supabase = createClient();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("returnTo", returnTo);
 
-    if (!error && data.user) {
-      router.refresh();
-      setTimeout(() => {
-        window.location.assign(returnTo);
-      }, 1500);
-    } else {
-      setError(error?.message || "Invalid credentials. Please try again.");
-      setIsLoading(false);
-    }
+      const result = await loginAction(formData);
+
+      if (result?.error) {
+        setError(result.error);
+      }
+    });
   };
 
   return (
@@ -129,14 +127,14 @@ export default function AdminLoginPage() {
               <button
                 id="admin-login-btn"
                 type="submit"
-                disabled={isLoading}
+                disabled={isPending}
                 className="w-full flex items-center justify-center gap-2.5 text-white font-heading font-semibold py-4 rounded-2xl transition-all duration-200 disabled:opacity-60 mt-2"
-                style={{ background: isLoading ? '#006b3f' : '#008751', boxShadow: '0 8px 20px rgba(0,135,81,0.25)' }}
-                onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLButtonElement).style.background = '#006b3f'; }}
-                onMouseLeave={e => { if (!isLoading) (e.currentTarget as HTMLButtonElement).style.background = '#008751'; }}
+                style={{ background: isPending ? '#006b3f' : '#008751', boxShadow: '0 8px 20px rgba(0,135,81,0.25)' }}
+                onMouseEnter={e => { if (!isPending) (e.currentTarget as HTMLButtonElement).style.background = '#006b3f'; }}
+                onMouseLeave={e => { if (!isPending) (e.currentTarget as HTMLButtonElement).style.background = '#008751'; }}
               >
                 <LogIn size={18} />
-                {isLoading ? "Authenticating..." : "Secure Login"}
+                {isPending ? "Authenticating..." : "Secure Login"}
               </button>
             </form>
           )}
