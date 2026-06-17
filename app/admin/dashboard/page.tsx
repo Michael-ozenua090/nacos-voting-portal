@@ -11,7 +11,6 @@ import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
 import StatCard from "@/components/admin/StatCard";
 import TransactionTable from "@/components/admin/TransactionTable";
-import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
 import { createClient } from "@/utils/supabase/server";
 
@@ -170,7 +169,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <TopAppBar isAdmin isSuperAdmin={isSuperAdmin} />
-      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className=" w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Page heading */}
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-gray-900">
@@ -354,7 +353,6 @@ export default async function AdminDashboardPage() {
         {isSuperAdmin && <TransactionTable />}
       </main>
       <Footer />
-      <AdminBottomNav />
     </>
   );
 }

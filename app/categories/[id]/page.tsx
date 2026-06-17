@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
-import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import NomineeCard from "@/components/voting/NomineeCard";
 import LivePulse from "@/components/ui/LivePulse";
@@ -72,7 +71,7 @@ export default async function CategoryPage({ params }: Props) {
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className=" w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Back link */}
         <Link
           href="/"
@@ -135,7 +134,6 @@ export default async function CategoryPage({ params }: Props) {
         </div>
       </main>
       <Footer />
-      <BottomNav />
     </>
   );
 }

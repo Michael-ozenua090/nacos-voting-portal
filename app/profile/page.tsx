@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
-import BottomNav from "@/components/layout/BottomNav";
 import { User, Trophy } from "lucide-react";
 import Link from "next/link";
 import { nominees } from "@/lib/mockData";
@@ -16,7 +15,7 @@ export default function ProfilePage() {
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-6">
+      <main className=" max-w-2xl mx-auto px-4 pt-6">
         {/* Profile card */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6 text-center">
           <div className="w-20 h-20 rounded-full bg-nacos-green/10 flex items-center justify-center mx-auto mb-4">
@@ -64,7 +63,6 @@ export default function ProfilePage() {
         </div>
       </main>
       <Footer />
-      <BottomNav />
     </>
   );
 }

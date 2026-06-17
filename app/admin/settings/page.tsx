@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Settings, Save, AlertTriangle, CheckCircle2, Radio } from "lucide-react";
 import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
-import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import { createClient } from "@/utils/supabase/client";
 
 export default function AdminSettingsPage() {
@@ -79,7 +78,7 @@ export default function AdminSettingsPage() {
   return (
     <>
       <TopAppBar isAdmin />
-      <main className="pb-24 md:pb-8 max-w-2xl lg:max-w-4xl mx-auto px-4 pt-4">
+      <main className=" max-w-2xl lg:max-w-4xl mx-auto px-4 pt-4">
         {/* Page heading */}
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-gray-900">
@@ -250,7 +249,6 @@ export default function AdminSettingsPage() {
         </div>
       </main>
       <Footer />
-      <AdminBottomNav />
     </>
   );
 }

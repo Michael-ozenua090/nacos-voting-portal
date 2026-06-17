@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
-import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import LivePulse from "@/components/ui/LivePulse";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
@@ -70,7 +69,7 @@ export default async function LeaderboardPage() {
         <UrlCleaner />
       </Suspense>
 
-      <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className=" w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Live badge */}
         <div className="flex items-center gap-3 mb-2">
           <LivePulse color="red" label="Live Updates" />
@@ -130,7 +129,7 @@ export default async function LeaderboardPage() {
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
               >
                 {/* Category header */}
-                <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-50">
+                <div className="flex items-center justify-between px-4 pt-4  border-b border-gray-50">
                   <h2 className="font-heading font-semibold text-gray-900 text-[15px]">
                     {category.name}
                   </h2>
@@ -228,7 +227,6 @@ export default async function LeaderboardPage() {
         </div>
       </main>
       <Footer />
-      <BottomNav />
     </>
   );
 }

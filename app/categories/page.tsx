@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Search, Monitor } from "lucide-react";
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
-import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/server";
 
@@ -34,7 +33,7 @@ export default async function CategoriesPage() {
   return (
     <>
       <TopAppBar />
-      <main className="pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4">
+      <main className=" max-w-2xl mx-auto px-4 pt-4">
         <h1 className="font-heading font-bold text-2xl text-gray-900 mb-1">
           All Categories
         </h1>
@@ -95,7 +94,6 @@ export default async function CategoriesPage() {
         )}
       </main>
       <Footer />
-      <BottomNav />
     </>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Plus, List, AlertTriangle, CheckCircle2, Edit2, Trash2, Search } from "lucide-react";
 import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
-import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import { createClient } from "@/utils/supabase/client";
 
 export default function AdminCategoriesPage() {
@@ -112,7 +111,7 @@ export default function AdminCategoriesPage() {
   return (
     <>
       <TopAppBar isAdmin />
-      <main className="pb-24 md:pb-8 max-w-2xl lg:max-w-4xl mx-auto px-4 pt-4">
+      <main className=" max-w-2xl lg:max-w-4xl mx-auto px-4 pt-4">
         {/* Page heading */}
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-gray-900">
@@ -210,7 +209,7 @@ export default function AdminCategoriesPage() {
 
         {/* Existing Categories List */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 pt-6 pb-4 border-b border-gray-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 pt-6  border-b border-gray-50">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                 <List size={16} className="text-gray-600" />
@@ -311,7 +310,6 @@ export default function AdminCategoriesPage() {
         </div>
       </main>
       <Footer />
-      <AdminBottomNav />
     </>
   );
 }
