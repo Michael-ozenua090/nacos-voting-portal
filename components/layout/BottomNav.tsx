@@ -8,7 +8,6 @@ const navItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/categories", icon: Trophy, label: "Categories" },
   { href: "/leaderboard", icon: BarChart2, label: "Leaderboard" },
-  { href: "/profile", icon: User, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -16,7 +15,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-100 shadow-lg">
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-3 h-16">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive =
             href === "/" ? pathname === "/" : pathname.startsWith(href);

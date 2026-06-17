@@ -27,6 +27,7 @@ export default function AdminLoginPage() {
 
     if (!error) {
       router.push(returnTo);
+      router.refresh();
     } else {
       setError(error.message || "Invalid credentials. Please try again.");
       setIsLoading(false);
