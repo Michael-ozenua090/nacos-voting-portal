@@ -36,7 +36,7 @@ export default async function AdminDashboardPage() {
   // --- Auth Guard: Email Whitelist ---
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user) {
     redirect("/admin/login");
   }
 
