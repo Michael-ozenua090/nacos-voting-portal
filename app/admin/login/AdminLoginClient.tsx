@@ -25,14 +25,13 @@ export default function AdminLoginPage() {
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    console.log("SUPABASE DEBUG:", { data, error });
-
-    if (!error) {
-      alert("LOGIN SUCCESS. REDIRECTING...");
-      window.location.href = returnTo;
+    if (!error && data.user) {
+      setTimeout(() => {
+        router.refresh();
+        router.push(returnTo);
+      }, 1000);
     } else {
-      alert("LOGIN FAILED: " + JSON.stringify(error));
-      setError(error.message || "Invalid credentials. Please try again.");
+      setError(error?.message || "Invalid credentials. Please try again.");
       setIsLoading(false);
     }
   };
