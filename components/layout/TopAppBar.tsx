@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, LogOut, LayoutDashboard, Trophy, Users, Settings } from "lucide-react";
@@ -74,9 +75,12 @@ export default function TopAppBar({ isAdmin = false, isSuperAdmin = false }: Top
         <Link
           href={isAdmin ? "/admin/dashboard" : "/"}
           id="top-bar-logo"
-          className="font-heading font-bold text-nacos-green text-lg tracking-tight"
+          className="flex items-center gap-2"
         >
-          NACOS Awards
+          <Image src="/nacos-logo.jpg" alt="NACOS Logo" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
+          <span className="font-heading font-bold text-nacos-green text-lg tracking-tight hidden sm:block">
+            NACOS Awards
+          </span>
         </Link>
 
         {/* Desktop nav links */}

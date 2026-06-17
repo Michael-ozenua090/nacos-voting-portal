@@ -1,13 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-100 py-8 mt-16 mb-16 md:mb-0">
       <div className="w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500 font-body text-center md:text-left">
-            © 2024 NACOS. All Rights Reserved.
-          </p>
+          <div className="flex items-center gap-3">
+            <Image src="/nacos-logo.jpg" alt="NACOS Logo" width={32} height={32} className="w-8 h-8 object-contain" />
+            <p className="text-sm text-gray-500 font-body text-center md:text-left">
+              © 2026 NACOS. All Rights Reserved.
+            </p>
+          </div>
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {[
               { href: "/terms", label: "Terms" },
@@ -23,8 +27,8 @@ export default function Footer() {
               </Link>
             ))}
             <span className="text-xs text-gray-400 font-body">
-              Powered by{" "}
-              <span className="text-nacos-green font-semibold">Flutterwave</span>
+              Built by{" "}
+              <span className="text-nacos-green font-semibold">Michael Ozenua Oshovue</span>
             </span>
           </nav>
         </div>
