@@ -40,6 +40,8 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
+  const isSuperAdmin = user?.email === process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+
   // --- Live Metric Queries ---
 
   // 1. Total Revenue — sum of successful transaction amounts
@@ -167,7 +169,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <TopAppBar isAdmin />
+      <TopAppBar isAdmin isSuperAdmin={isSuperAdmin} />
       <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Page heading */}
         <div className="mb-6">
@@ -182,18 +184,20 @@ export default async function AdminDashboardPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total Revenue */}
-          <StatCard
-            title="Total Revenue"
-            iconBg="bg-nacos-gold/20"
-            icon={<CreditCard size={20} className="text-amber-600" />}
-          >
-            <p className="font-heading font-bold text-3xl text-gray-900">
-              {formatNaira(totalRevenue)}
-            </p>
-            <p className="text-xs font-body text-gray-400 mt-1 flex items-center gap-1">
-              From {(revenueRows || []).length} successful payments
-            </p>
-          </StatCard>
+          {isSuperAdmin && (
+            <StatCard
+              title="Total Revenue"
+              iconBg="bg-nacos-gold/20"
+              icon={<CreditCard size={20} className="text-amber-600" />}
+            >
+              <p className="font-heading font-bold text-3xl text-gray-900">
+                {formatNaira(totalRevenue)}
+              </p>
+              <p className="text-xs font-body text-gray-400 mt-1 flex items-center gap-1">
+                From {(revenueRows || []).length} successful payments
+              </p>
+            </StatCard>
+          )}
 
           {/* Total Votes */}
           <StatCard
@@ -276,20 +280,24 @@ export default async function AdminDashboardPage() {
                   <tr className="border-t border-gray-50 bg-gray-50/50">
                     <th className="text-left px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Category</th>
                     <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Total Votes</th>
-                    <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Revenue</th>
+                    {isSuperAdmin && (
+                      <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Revenue</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {sortedCatStats.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="px-5 py-8 text-center text-gray-400 font-body text-sm">No data available yet.</td>
+                      <td colSpan={isSuperAdmin ? 3 : 2} className="px-5 py-8 text-center text-gray-400 font-body text-sm">No data available yet.</td>
                     </tr>
                   )}
                   {sortedCatStats.map(([catName, stats]) => (
                     <tr key={catName} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-5 py-4 font-body font-medium text-gray-800 text-[13px]">{catName}</td>
                       <td className="px-5 py-4 text-right font-heading font-bold text-gray-900 text-[13px]">{formatVotes(stats.votes)}</td>
-                      <td className="px-5 py-4 text-right font-heading font-bold text-nacos-green text-[13px]">{formatNaira(stats.amount)}</td>
+                      {isSuperAdmin && (
+                        <td className="px-5 py-4 text-right font-heading font-bold text-nacos-green text-[13px]">{formatNaira(stats.amount)}</td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -313,13 +321,15 @@ export default async function AdminDashboardPage() {
                   <tr className="border-t border-gray-50 bg-gray-50/50">
                     <th className="text-left px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Nominee</th>
                     <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Total Votes</th>
-                    <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Revenue</th>
+                    {isSuperAdmin && (
+                      <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">Revenue</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {sortedNomStats.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="px-5 py-8 text-center text-gray-400 font-body text-sm">No data available yet.</td>
+                      <td colSpan={isSuperAdmin ? 3 : 2} className="px-5 py-8 text-center text-gray-400 font-body text-sm">No data available yet.</td>
                     </tr>
                   )}
                   {sortedNomStats.map(([nomName, stats]) => (
@@ -329,7 +339,9 @@ export default async function AdminDashboardPage() {
                         <p className="text-[11px] text-gray-400 font-body truncate">{stats.category}</p>
                       </td>
                       <td className="px-5 py-4 text-right font-heading font-bold text-gray-900 text-[13px]">{formatVotes(stats.votes)}</td>
-                      <td className="px-5 py-4 text-right font-heading font-bold text-nacos-green text-[13px]">{formatNaira(stats.amount)}</td>
+                      {isSuperAdmin && (
+                        <td className="px-5 py-4 text-right font-heading font-bold text-nacos-green text-[13px]">{formatNaira(stats.amount)}</td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -339,7 +351,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Recent Transactions */}
-        <TransactionTable />
+        {isSuperAdmin && <TransactionTable />}
       </main>
       <Footer />
       <AdminBottomNav />

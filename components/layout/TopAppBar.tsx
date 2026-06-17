@@ -22,9 +22,10 @@ const adminNavLinks = [
 
 interface TopAppBarProps {
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
-export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
+export default function TopAppBar({ isAdmin = false, isSuperAdmin = false }: TopAppBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -50,7 +51,11 @@ export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
     router.push("/admin/login");
   };
 
-  const activeNavLinks = isAdmin ? adminNavLinks : navLinks;
+  const activeAdminNavLinks = isSuperAdmin
+    ? adminNavLinks
+    : adminNavLinks.filter((link) => link.href !== "/admin/settings");
+
+  const activeNavLinks = isAdmin ? activeAdminNavLinks : navLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
