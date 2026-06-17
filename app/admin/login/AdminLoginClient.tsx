@@ -23,11 +23,15 @@ export default function AdminLoginPage() {
     setError("");
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    console.log("SUPABASE DEBUG:", { data, error });
 
     if (!error) {
+      alert("LOGIN SUCCESS. REDIRECTING...");
       window.location.href = returnTo;
     } else {
+      alert("LOGIN FAILED: " + JSON.stringify(error));
       setError(error.message || "Invalid credentials. Please try again.");
       setIsLoading(false);
     }
