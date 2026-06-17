@@ -160,7 +160,7 @@ export default function VoteModal({
               <button
                 id="vote-modal-decrement"
                 onClick={decrement}
-                disabled={voteCount <= 1}
+                disabled={Number(voteCount) <= 1}
                 className="w-12 h-12 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-nacos-green hover:bg-nacos-green hover:text-white hover:border-nacos-green disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <Minus size={18} strokeWidth={2.5} />
