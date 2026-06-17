@@ -1,55 +1,52 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
-// Protected admin route prefixes
-const ADMIN_PATHS = ["/admin/dashboard", "/admin/categories"];
-const LOGIN_PATH = "/admin/login";
+export async function proxy(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
-// Cookie name — will be replaced with Supabase Auth cookie when integrating backend
-const SESSION_COOKIE = "nacos-admin-session";
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
 
-// Next.js 16+ uses "proxy" (renamed from "middleware")
-// Structured for easy Supabase Auth migration: swap cookie check for session validation
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  const isAdminProtected = ADMIN_PATHS.some((path) =>
-    pathname.startsWith(path)
-  );
-
-  if (!isAdminProtected) {
-    return NextResponse.next();
+  // Allow unrestricted access to the login page
+  if (request.nextUrl.pathname.startsWith('/admin/login')) {
+    return supabaseResponse
   }
 
-  // Server-side cookie check (NOT localStorage — cookie is readable by Next.js edge runtime)
-  const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+  // Check auth session for all other /admin routes
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  if (!sessionToken) {
-    // No session → redirect to login with return_to for post-login redirect
-    const loginUrl = new URL(LOGIN_PATH, request.url);
-    loginUrl.searchParams.set("return_to", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (!user) {
+    // Redirect unauthenticated users to the login page
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin/login'
+    return NextResponse.redirect(url)
   }
 
-  // TODO: Supabase Auth migration — replace above with:
-  //   import { createServerClient } from "@supabase/ssr";
-  //   const supabase = createServerClient(...);
-  //   const { data: { session } } = await supabase.auth.getSession();
-  //   if (!session) return NextResponse.redirect(loginUrl);
-
-  const response = NextResponse.next();
-
-  // Security headers on all protected admin responses
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  return response;
+  return supabaseResponse
 }
 
 export const config = {
-  matcher: [
-    "/admin/dashboard/:path*",
-    "/admin/categories/:path*",
-  ],
-};
+  matcher: ['/admin/:path*'],
+}

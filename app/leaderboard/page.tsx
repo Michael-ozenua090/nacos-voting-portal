@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import TopAppBar from "@/components/layout/TopAppBar";
@@ -5,15 +6,15 @@ import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import LivePulse from "@/components/ui/LivePulse";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
+import UrlCleaner from "@/components/ui/UrlCleaner";
 import { createClient } from "@/utils/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Standings Leaderboard",
   description: "Live vote standings across all NACOS Award Night categories.",
 };
-
-// Revalidate every 30 seconds for live-ish feeling without hammering DB too hard
-export const revalidate = 30;
 
 const formatVotes = (votes: number): string => {
   if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
@@ -64,6 +65,11 @@ export default async function LeaderboardPage() {
   return (
     <>
       <TopAppBar />
+      {/* Silently strip payment redirect params from the URL */}
+      <Suspense fallback={null}>
+        <UrlCleaner />
+      </Suspense>
+
       <main className="pb-24 md:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Live badge */}
         <div className="flex items-center gap-3 mb-2">

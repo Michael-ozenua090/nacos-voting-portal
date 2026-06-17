@@ -35,7 +35,7 @@ export default function VoteModal({
   category,
   nominationId,
 }: VoteModalProps) {
-  const [voteCount, setVoteCount] = useState(1);
+  const [voteCount, setVoteCount] = useState<number | "">(1);
   const [voterName, setVoterName] = useState("");
   const [voterEmail, setVoterEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -43,10 +43,11 @@ export default function VoteModal({
 
   if (!isOpen) return null;
 
-  const totalCost = voteCount * VOTE_PRICE;
+  const safeVoteCount = typeof voteCount === "number" ? voteCount : (parseInt(voteCount as string, 10) || 1);
+  const totalCost = safeVoteCount * VOTE_PRICE;
 
-  const increment = () => setVoteCount((c) => Math.min(c + 1, 999));
-  const decrement = () => setVoteCount((c) => Math.max(c - 1, 1));
+  const increment = () => setVoteCount((c) => (typeof c === "number" ? c : (parseInt(c as string, 10) || 1)) + 1);
+  const decrement = () => setVoteCount((c) => Math.max((typeof c === "number" ? c : (parseInt(c as string, 10) || 1)) - 1, 1));
 
   const handlePay = async () => {
     if (!voterName.trim() || !voterEmail.trim()) return;
@@ -70,10 +71,10 @@ export default function VoteModal({
         nominationId,
         voterName: voterName.trim(),
         voterEmail: voterEmail.trim(),
-        numberOfVotes: voteCount,
+        numberOfVotes: safeVoteCount,
       };
       
-      console.log("Sending payload to /api/pay:", payload);
+      // console.log("Sending payload to /api/pay:", payload);
 
       const res = await fetch("/api/pay", {
         method: "POST",
@@ -164,9 +165,23 @@ export default function VoteModal({
               >
                 <Minus size={18} strokeWidth={2.5} />
               </button>
-              <span className="font-heading font-bold text-4xl text-gray-900 w-14 text-center tabular-nums">
-                {voteCount}
-              </span>
+              <input
+                type="number"
+                min="1"
+                value={voteCount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setVoteCount("");
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    if (!isNaN(parsed) && parsed > 0) {
+                      setVoteCount(parsed);
+                    }
+                  }
+                }}
+                className="font-heading font-bold text-4xl text-gray-900 w-24 text-center tabular-nums bg-transparent appearance-none m-0 focus:outline-none focus:ring-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
               <button
                 id="vote-modal-increment"
                 onClick={increment}

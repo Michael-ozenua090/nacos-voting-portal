@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, User } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, LogOut, LayoutDashboard, Trophy, Users, Settings } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/categories", label: "Categories" },
   { href: "/leaderboard", label: "Leaderboard" },
+];
+
+const adminNavLinks = [
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/categories", label: "Categories", icon: Trophy },
+  { href: "/admin/students", label: "Students", icon: Users },
+  { href: "/admin/nominees", label: "Nominees", icon: Users },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 interface TopAppBarProps {
@@ -17,7 +26,31 @@ interface TopAppBarProps {
 
 export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setAdminDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+  };
+
+  const activeNavLinks = isAdmin ? adminNavLinks : navLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -42,51 +75,63 @@ export default function TopAppBar({ isAdmin = false }: TopAppBarProps) {
         </Link>
 
         {/* Desktop nav links */}
-        {!isAdmin && (
-          <nav className="hidden lg:flex items-center gap-6">
-            {navLinks.map(({ href, label }) => {
-              const isActive =
-                href === "/" ? pathname === "/" : pathname.startsWith(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`text-sm font-medium font-body transition-colors ${
-                    isActive
-                      ? "text-nacos-green font-semibold"
-                      : "text-gray-500 hover:text-nacos-green"
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
+        <nav className="hidden lg:flex items-center gap-6">
+          {activeNavLinks.map(({ href, label }) => {
+            const isActive =
+              href === "/" || href === "/admin/dashboard"
+                ? pathname === href
+                : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`text-sm font-medium font-body transition-colors ${
+                  isActive
+                    ? "text-nacos-green font-semibold"
+                    : "text-gray-500 hover:text-nacos-green"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Right: profile icon */}
-        <div className="flex items-center gap-2">
-          {isAdmin ? (
-            <div className="w-9 h-9 rounded-full bg-nacos-green flex items-center justify-center">
-              <span className="text-white text-sm font-bold font-heading">A</span>
-            </div>
-          ) : (
-            <Link
-              href="/profile"
-              id="top-bar-profile"
-              className="w-9 h-9 rounded-full bg-nacos-green/10 flex items-center justify-center text-nacos-green hover:bg-nacos-green/20 transition-colors"
-              aria-label="Profile"
-            >
-              <User size={18} />
-            </Link>
+        <div className="flex items-center gap-2 relative" ref={dropdownRef}>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => setAdminDropdownOpen((o) => !o)}
+                className="w-9 h-9 rounded-full bg-nacos-green flex items-center justify-center hover:bg-nacos-dark transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nacos-green"
+              >
+                <span className="text-white text-sm font-bold font-heading">A</span>
+              </button>
+              
+              {/* Admin Dropdown */}
+              {adminDropdownOpen && (
+                <div className="absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 animate-slide-up origin-top-right">
+                  <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                    <p className="text-sm font-bold font-heading text-gray-900">Administrator</p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left px-4 py-2 text-sm font-medium font-body text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
       {/* Mobile dropdown menu */}
-      {mobileMenuOpen && !isAdmin && (
+      {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-3 animate-slide-up">
-          {navLinks.map(({ href, label }) => (
+          {activeNavLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}

@@ -45,6 +45,18 @@ export async function POST(req: NextRequest) {
     // Generate Transaction Reference (tx_ref)
     const txRef = `NACOS-AWARDS-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
 
+    // Fetch category ID to return the user to the correct page
+    const { data: nomination, error: nomError } = await supabase
+      .from("nominations")
+      .select("category_id")
+      .eq("id", nominationId)
+      .single();
+
+    if (nomError || !nomination) {
+      return NextResponse.json({ error: "Invalid nomination ID." }, { status: 400 });
+    }
+    const categoryId = nomination.category_id;
+
     // Database Entry: insert a row into the transactions table with a status of 'pending'
     const { error: insertError } = await supabase
       .from("transactions")
@@ -69,7 +81,7 @@ export async function POST(req: NextRequest) {
       tx_ref: txRef,
       amount: totalAmount,
       currency: "NGN",
-      redirect_url: "http://localhost:3000/leaderboard",
+      redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/categories/${categoryId}`,
       customer: {
         email: voterEmail,
         name: voterName
