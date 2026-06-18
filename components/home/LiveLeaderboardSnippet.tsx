@@ -12,7 +12,7 @@ const formatVotes = (votes: number): string => {
 export default async function LiveLeaderboardSnippet() {
   const supabase = await createClient();
 
-  // Fetch first 2 categories with their nominations and contestants
+  // Fetch all categories with their nominations and contestants to calculate global totals
   const { data: categories } = await supabase
     .from("categories")
     .select(`
@@ -27,10 +27,22 @@ export default async function LiveLeaderboardSnippet() {
           slug
         )
       )
-    `)
-    .limit(2);
+    `);
 
   const validCategories = categories || [];
+
+  // Calculate total votes per category and take the top 2 most active
+  const topTwoCategories = validCategories
+    .map((cat) => ({
+      ...cat,
+      totalVotes: (cat.nominations || []).reduce(
+        (sum: number, nom: { current_votes: number | null }) =>
+          sum + (nom.current_votes || 0),
+        0
+      ),
+    }))
+    .sort((a, b) => b.totalVotes - a.totalVotes)
+    .slice(0, 2);
 
   return (
     <section className="px-4">
@@ -47,13 +59,13 @@ export default async function LiveLeaderboardSnippet() {
       </div>
 
       <div className="space-y-3">
-        {validCategories.map((category) => {
+        {topTwoCategories.map((category) => {
           const sortedNoms = [...(category.nominations || [])].sort(
             (a: { current_votes: number | null }, b: { current_votes: number | null }) =>
               (b.current_votes || 0) - (a.current_votes || 0)
           );
-          const topThree = sortedNoms.slice(0, 3);
-          const maxVotes = topThree[0]?.current_votes || 1;
+          const topTwo = sortedNoms.slice(0, 2);
+          const maxVotes = topTwo[0]?.current_votes || 1;
 
           return (
             <div
@@ -66,7 +78,8 @@ export default async function LiveLeaderboardSnippet() {
                 </p>
               </div>
               <div className="p-4 space-y-3">
-                {topThree.map((nom: any, idx: number) => {
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {topTwo.map((nom: any, idx: number) => {
                   const contestant = nom.contestants;
                   if (!contestant) return null;
                   const rank = idx + 1;
@@ -104,7 +117,7 @@ export default async function LiveLeaderboardSnippet() {
                     </div>
                   );
                 })}
-                {topThree.length === 0 && (
+                {topTwo.length === 0 && (
                   <p className="text-sm text-gray-500 font-body text-center py-2">
                     No nominations yet.
                   </p>
@@ -114,7 +127,7 @@ export default async function LiveLeaderboardSnippet() {
           );
         })}
 
-        {validCategories.length === 0 && (
+        {topTwoCategories.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
             <p className="text-sm text-gray-500 font-body">No categories available yet.</p>
           </div>
