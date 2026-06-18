@@ -1,30 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Monitor } from "lucide-react";
+import { Monitor, LayoutGrid } from "lucide-react";
 
-export default function CategoryBentoGridClient({ initialCategories }: { initialCategories: any[] }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  useEffect(() => {
-    const handleSearch = (e: CustomEvent) => {
-      setSearchTerm(e.detail);
-    };
-    window.addEventListener("home-search" as any, handleSearch);
-    return () => window.removeEventListener("home-search" as any, handleSearch);
-  }, []);
+type CategoryItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  totalVotes: number;
+};
 
-  const validCategories = initialCategories || [];
-  
-  const filteredCategories = validCategories.filter((cat) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      cat.name?.toLowerCase().includes(term) ||
-      cat.description?.toLowerCase().includes(term)
-    );
-  });
+export default function CategoryBentoGridClient({
+  initialCategories,
+}: {
+  initialCategories: CategoryItem[];
+}) {
+  const categories = initialCategories || [];
 
   return (
     <section className="px-4">
@@ -51,7 +42,7 @@ export default function CategoryBentoGridClient({ initialCategories }: { initial
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredCategories.map((category) => (
+        {categories.map((category) => (
           <Link
             key={category.id}
             href={`/categories/${category.id}`}
@@ -78,13 +69,25 @@ export default function CategoryBentoGridClient({ initialCategories }: { initial
           </Link>
         ))}
 
-        {filteredCategories.length === 0 && (
+        {categories.length === 0 && (
           <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-200 rounded-3xl">
             <p className="text-gray-500 font-body">
-              {searchTerm ? "No categories found for your search." : "No categories available yet."}
+              No categories available yet.
             </p>
           </div>
         )}
+      </div>
+
+      {/* View All Categories button */}
+      <div className="mt-6 flex justify-center">
+        <Link
+          href="/categories"
+          id="view-all-categories-btn"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-nacos-green text-nacos-green font-heading font-semibold text-sm hover:bg-nacos-green hover:text-white transition-all duration-200 shadow-sm hover:shadow-md"
+        >
+          <LayoutGrid size={16} />
+          View All Categories
+        </Link>
       </div>
     </section>
   );

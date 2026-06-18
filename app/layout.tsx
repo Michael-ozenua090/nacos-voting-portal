@@ -27,6 +27,10 @@ export const metadata: Metadata = {
     description: "Vote for your favourite nominees. 1 Vote = ₦100.",
     type: "website",
   },
+  // Replace the default Next.js favicon with the NACOS logo
+  icons: {
+    icon: "/nacos-logo.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -36,7 +40,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${spaceGrotesk.variable} ${inter.variable}`}>
-      <body className="font-body bg-nacos-light antialiased">{children}</body>
+      {/*
+        flex flex-col min-h-screen → body always fills the full viewport height.
+        The inner div with flex-1 flex flex-col is the DRY global sticky-footer fix:
+        it pushes the footer to the bottom on every page without touching individual
+        page files. We use a <div> (not <main>) because each page already renders
+        its own semantically-correct <main> tag.
+      */}
+      <body className="font-body bg-nacos-light antialiased flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
