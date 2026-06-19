@@ -11,6 +11,7 @@ const statusStyles: Record<string, string> = {
   successful: "bg-nacos-green/10 text-nacos-green",
   pending: "bg-amber-50 text-amber-600",
   failed: "bg-red-50 text-red-600",
+  cancelled: "bg-gray-100 text-gray-600",
 };
 
 export default function TransactionTableClient({ initialRows }: { initialRows: any[] }) {
@@ -24,6 +25,35 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
       txn.tx_ref?.toLowerCase().includes(term)
     );
   });
+
+  const handleDownloadCsv = () => {
+    const headers = ["Voter Name", "Voter Email", "Nominee", "Votes", "Amount", "Status", "Reference", "Date"];
+    const rows = filteredRows.map(txn => [
+      `"${txn.voter_name || ''}"`,
+      `"${txn.voter_email || ''}"`,
+      `"${txn.nominations?.contestants?.name || ''}"`,
+      txn.number_of_votes || 0,
+      txn.amount || 0,
+      `"${txn.status || ''}"`,
+      `"${txn.tx_ref || ''}"`,
+      `"${new Date(txn.created_at).toISOString()}"`
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "nacos_transactions.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -49,12 +79,12 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
               className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm font-body text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-nacos-green transition-all"
             />
           </div>
-          <Link
-            href="#"
-            className="hidden sm:block text-sm font-body font-semibold text-nacos-green hover:text-nacos-dark transition-colors whitespace-nowrap"
+          <button
+            onClick={handleDownloadCsv}
+            className="hidden sm:flex text-sm items-center gap-2 font-body font-semibold text-gray-700 bg-white border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
-            View All
-          </Link>
+            Download CSV
+          </button>
         </div>
       </div>
 

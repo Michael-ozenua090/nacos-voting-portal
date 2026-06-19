@@ -3,10 +3,10 @@ import { createClient } from "@/utils/supabase/server";
 
 
 
-export default async function TransactionTable() {
+export default async function TransactionTable({ limit }: { limit?: number }) {
   const supabase = await createClient();
 
-  const { data: transactions } = await supabase
+  let query = supabase
     .from("transactions")
     .select(`
       id,
@@ -23,8 +23,13 @@ export default async function TransactionTable() {
         )
       )
     `)
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .order("created_at", { ascending: false });
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data: transactions } = await query;
 
   const rows = transactions || [];
   return <TransactionTableClient initialRows={rows} />;

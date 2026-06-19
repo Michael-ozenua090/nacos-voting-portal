@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`ℹ️ Parsed values -> TX Ref: ${txRef}, Status: ${status}, FLW ID: ${flwId}`);
 
-    if (status !== "successful") {
-       console.log(`🟠 3. EVENT IGNORED: Status was '${status}' (Expected 'successful')`);
+    if (!["successful", "failed", "cancelled"].includes(status)) {
+       console.log(`🟠 3. EVENT IGNORED: Status was '${status}' (Expected 'successful', 'failed', or 'cancelled')`);
        return NextResponse.json({ message: "Event ignored" }, { status: 200 });
     }
 
@@ -58,6 +58,23 @@ export async function POST(req: NextRequest) {
     if (existingTx.status === "successful") {
       console.log("iana 7. TRANSACTION ALREADY PROCESSED SUCCESSFULLY");
       return NextResponse.json({ message: "Transaction already processed" }, { status: 200 });
+    }
+
+    if (status === "failed" || status === "cancelled") {
+      console.log(`固定 8. UPDATING TRANSACTION STATUS TO ${status.toUpperCase()}...`);
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({ status: status, flw_ref: flwId })
+        .eq("tx_ref", txRef);
+
+      if (updateError) {
+        console.error("🔴 DB ERROR (Update TX):", updateError);
+        return NextResponse.json({ error: `Database error during transaction ${status} update` }, { status: 500 });
+      }
+      console.log(`✅ 10. WEBHOOK RUN COMPLETED: TRANSACTION MARKED AS ${status.toUpperCase()}`);
+      console.log("==================================\n");
+      revalidatePath("/", "layout");
+      return NextResponse.json({ message: `Webhook processed (${status})` }, { status: 200 });
     }
 
     console.log("固定 8. UPDATING TRANSACTION STATUS TO SUCCESSFUL...");

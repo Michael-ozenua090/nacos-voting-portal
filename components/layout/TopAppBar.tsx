@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, LogOut, LayoutDashboard, Trophy, Users, Settings } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, Trophy, Users, Settings, CreditCard } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -53,7 +53,11 @@ export default function TopAppBar({ isAdmin = false, isSuperAdmin = false }: Top
   };
 
   const activeAdminNavLinks = isSuperAdmin
-    ? adminNavLinks
+    ? [
+        ...adminNavLinks.slice(0, 1),
+        { href: "/admin/transactions", label: "Transactions", icon: CreditCard },
+        ...adminNavLinks.slice(1)
+      ]
     : adminNavLinks.filter((link) => link.href !== "/admin/settings");
 
   const activeNavLinks = isAdmin ? activeAdminNavLinks : navLinks;

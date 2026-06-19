@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   CreditCard,
   Vote,
@@ -350,7 +351,16 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Recent Transactions */}
-        {isSuperAdmin && <TransactionTable />}
+        {isSuperAdmin && (
+          <div className="flex flex-col gap-4">
+            <TransactionTable limit={10} />
+            <div className="flex justify-center mt-2">
+              <Link href="/admin/transactions" className="text-nacos-green font-body font-semibold text-sm hover:underline flex items-center gap-1">
+                View All Transactions &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </>
