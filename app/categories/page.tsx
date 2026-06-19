@@ -1,5 +1,6 @@
 import HomeSearchInputClient from "@/components/home/HomeSearchInputClient";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/server";
 import CategoriesClientPage, {
@@ -57,12 +58,16 @@ export default async function CategoriesPage() {
         </h1>
 
         {/* Interactive Search */}
-        <div className="mt-4 mb-6 -mx-4 sm:mx-0">
-          <HomeSearchInputClient />
-        </div>
+        <Suspense fallback={<div className="h-20" />}>
+          <div className="mt-4 mb-6 -mx-4 sm:mx-0">
+            <HomeSearchInputClient />
+          </div>
+        </Suspense>
 
         {/* Client component owns sort state and renders the grid */}
-        <CategoriesClientPage categories={categoriesWithStats} />
+        <Suspense fallback={<div className="h-20" />}>
+          <CategoriesClientPage categories={categoriesWithStats} />
+        </Suspense>
       </main>
       <Footer />
     </>

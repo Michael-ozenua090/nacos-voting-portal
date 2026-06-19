@@ -3,6 +3,7 @@ import HeroSection from "@/components/home/HeroSection";
 import LiveLeaderboardSnippet from "@/components/home/LiveLeaderboardSnippet";
 import CategoryBentoGrid from "@/components/home/CategoryBentoGrid";
 import HomeSearchInputClient from "@/components/home/HomeSearchInputClient";
+import { Suspense } from "react";
 
 export default async function HomePage() {
   return (
@@ -16,7 +17,9 @@ export default async function HomePage() {
             <HeroSection />
 
             {/* Search bar */}
-            <HomeSearchInputClient />
+            <Suspense fallback={<div className="h-20" />}>
+              <HomeSearchInputClient />
+            </Suspense>
           </div>
 
           <div className="lg:col-span-1">
@@ -26,7 +29,9 @@ export default async function HomePage() {
         </div>
 
         {/* Category grid */}
-        <CategoryBentoGrid />
+        <Suspense fallback={<div className="h-20" />}>
+          <CategoryBentoGrid />
+        </Suspense>
       </main>
       <Footer />
     </>
