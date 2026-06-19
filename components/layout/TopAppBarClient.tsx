@@ -60,7 +60,11 @@ export default function TopAppBar({ isAdmin = false, isSuperAdmin = false }: Top
       ]
     : adminNavLinks.filter((link) => link.href !== "/admin/settings");
 
-  const activeNavLinks = isAdmin ? [...navLinks, ...adminLinks] : navLinks;
+  const isAdminRoute = pathname.startsWith("/admin");
+
+  const activeNavLinks = isAdminRoute
+    ? [...adminLinks, { href: "/", label: "View Public Site" }]
+    : navLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -77,7 +81,7 @@ export default function TopAppBar({ isAdmin = false, isSuperAdmin = false }: Top
 
         {/* Logo */}
         <Link
-          href={isAdmin ? "/admin/dashboard" : "/"}
+          href={isAdminRoute ? "/admin/dashboard" : "/"}
           id="top-bar-logo"
           className="flex items-center gap-2"
         >
