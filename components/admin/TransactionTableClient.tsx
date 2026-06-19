@@ -20,9 +20,14 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
   const filteredRows = initialRows.filter((txn) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
+    const catName = txn.nominations?.categories?.name?.toLowerCase() || "";
+    const nomName = txn.nominations?.contestants?.name?.toLowerCase() || "";
     return (
       txn.voter_email?.toLowerCase().includes(term) ||
-      txn.tx_ref?.toLowerCase().includes(term)
+      txn.tx_ref?.toLowerCase().includes(term) ||
+      catName.includes(term) ||
+      nomName.includes(term) ||
+      txn.voter_name?.toLowerCase().includes(term)
     );
   });
 
@@ -99,6 +104,9 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
               <th className="text-left px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">
                 Nominee
               </th>
+              <th className="text-left px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">
+                Category
+              </th>
               <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">
                 Votes
               </th>
@@ -126,6 +134,8 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
               filteredRows.map((txn: any) => {
                 const nomineeName =
                   txn.nominations?.contestants?.name || "Unknown";
+                const categoryName =
+                  txn.nominations?.categories?.name || "Unknown";
                 const initials = txn.voter_name
                   ? (txn.voter_name.split(" ")[0]?.[0] || "") +
                     (txn.voter_name.split(" ")[1]?.[0] || "")
@@ -160,6 +170,12 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
                     <td className="px-5 py-4">
                       <span className="font-body text-[13px] text-gray-700">
                         {nomineeName}
+                      </span>
+                    </td>
+                    {/* Category */}
+                    <td className="px-5 py-4">
+                      <span className="font-body text-[13px] text-gray-600">
+                        {categoryName}
                       </span>
                     </td>
                     {/* Votes */}

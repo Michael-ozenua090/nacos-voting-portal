@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Monitor, ArrowUpDown, ArrowDownAZ } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export type CategoryWithStats = {
   id: string;
@@ -20,8 +21,15 @@ export default function CategoriesClientPage({
   categories: CategoryWithStats[];
 }) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("votes");
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query")?.toLowerCase() || "";
 
-  const sorted = [...categories].sort((a, b) =>
+  const filtered = categories.filter(cat => 
+    cat.name.toLowerCase().includes(query) || 
+    cat.description?.toLowerCase().includes(query)
+  );
+
+  const sorted = [...filtered].sort((a, b) =>
     sortOrder === "votes"
       ? b.totalVotes - a.totalVotes
       : a.name.localeCompare(b.name)

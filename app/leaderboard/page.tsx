@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
 import LivePulse from "@/components/ui/LivePulse";
 import UrlCleaner from "@/components/ui/UrlCleaner";
@@ -100,7 +99,6 @@ export default async function LeaderboardPage() {
 
   return (
     <>
-      <TopAppBar />
       {/* Silently strip payment redirect params from the URL */}
       <Suspense fallback={null}>
         <UrlCleaner />

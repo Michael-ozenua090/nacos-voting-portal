@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Edit2, Trash2, Users, AlertTriangle, CheckCircle2, Save, Search } from "lucide-react";
-import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/client";
 
@@ -144,7 +143,6 @@ export default function AdminStudentsPage() {
 
   return (
     <>
-      <TopAppBar isAdmin />
       <main className=" max-w-2xl lg:max-w-6xl mx-auto px-4 pt-4">
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-gray-900">

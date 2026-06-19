@@ -10,12 +10,20 @@ type CategoryItem = {
   totalVotes: number;
 };
 
+import { useSearchParams } from "next/navigation";
+
 export default function CategoryBentoGridClient({
   initialCategories,
 }: {
   initialCategories: CategoryItem[];
 }) {
-  const categories = initialCategories || [];
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query")?.toLowerCase() || "";
+  
+  const categories = (initialCategories || []).filter(cat => 
+    cat.name.toLowerCase().includes(query) || 
+    cat.description?.toLowerCase().includes(query)
+  );
 
   return (
     <section className="px-4">

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
 import { User, Trophy } from "lucide-react";
 import Link from "next/link";
@@ -14,7 +13,6 @@ export default function ProfilePage() {
   // Static profile page — shows sample voter profile
   return (
     <>
-      <TopAppBar />
       <main className=" max-w-2xl mx-auto px-4 pt-6">
         {/* Profile card */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6 text-center">

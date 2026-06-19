@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Share2, Monitor } from "lucide-react";
-import TopAppBar from "@/components/layout/TopAppBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import VoteModal from "@/components/voting/VoteModal";
@@ -64,7 +63,6 @@ export default function NomineeProfileClient({
 
   return (
     <>
-      <TopAppBar />
       <main className="pb-24 lg:pb-8 w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Campaign hero card */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">

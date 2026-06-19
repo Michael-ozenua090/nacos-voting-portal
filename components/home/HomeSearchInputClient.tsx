@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export default function HomeSearchInputClient() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("query") || "");
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get("query") || "");
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchTerm(val);
-    window.dispatchEvent(new CustomEvent("home-search", { detail: val }));
+    const params = new URLSearchParams(searchParams);
+    if (val) {
+      params.set("query", val);
+    } else {
+      params.delete("query");
+    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (

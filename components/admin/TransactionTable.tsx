@@ -20,6 +20,9 @@ export default async function TransactionTable({ limit }: { limit?: number }) {
       nominations (
         contestants (
           name
+        ),
+        categories (
+          name
         )
       )
     `)

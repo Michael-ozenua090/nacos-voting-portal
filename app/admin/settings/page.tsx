@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Settings, Save, AlertTriangle, CheckCircle2, Radio } from "lucide-react";
-import TopAppBar from "@/components/layout/TopAppBar";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/client";
 
@@ -77,7 +76,6 @@ export default function AdminSettingsPage() {
 
   return (
     <>
-      <TopAppBar isAdmin />
       <main className=" max-w-2xl lg:max-w-4xl mx-auto px-4 pt-4">
         {/* Page heading */}
         <div className="mb-6">
