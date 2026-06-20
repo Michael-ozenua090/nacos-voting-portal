@@ -41,7 +41,7 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
       txn.amount || 0,
       `"${txn.status || ''}"`,
       `"${txn.tx_ref || ''}"`,
-      `"${new Date(txn.created_at).toISOString()}"`
+      `"${new Date(txn.created_at).toLocaleString('en-US')}"`
     ]);
 
     const csvContent = [
@@ -119,12 +119,15 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
               <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">
                 Reference
               </th>
+              <th className="text-right px-5 py-3 text-xs font-bold font-body text-gray-400 uppercase tracking-wider">
+                Date
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {filteredRows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-12 text-center">
+                <td colSpan={8} className="px-5 py-12 text-center">
                   <p className="text-gray-400 font-body text-sm">
                     {searchTerm ? "No results found for your search." : "No transactions recorded yet."}
                   </p>
@@ -202,6 +205,12 @@ export default function TransactionTableClient({ initialRows }: { initialRows: a
                     <td className="px-5 py-4 text-right">
                       <span className="font-body text-xs text-gray-400 tabular-nums">
                         {txn.tx_ref}
+                      </span>
+                    </td>
+                    {/* Date */}
+                    <td className="px-5 py-4 text-right">
+                      <span className="font-body text-[11px] text-gray-500 tabular-nums">
+                        {new Date(txn.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                       </span>
                     </td>
                   </tr>
