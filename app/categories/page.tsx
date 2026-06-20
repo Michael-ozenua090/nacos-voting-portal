@@ -53,6 +53,7 @@ export default async function CategoriesPage() {
         name: nom.contestants?.name || 'Unknown',
         slug: nom.contestants?.slug || '',
         image_url: nom.contestants?.image_url || null,
+        current_votes: nom.current_votes || 0,
       })).filter((n: any) => n.id);
 
       return {
