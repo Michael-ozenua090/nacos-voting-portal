@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BarChart2 } from "lucide-react";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
 import { createClient } from "@/utils/supabase/server";
@@ -24,7 +25,8 @@ export default async function LiveLeaderboardSnippet() {
         contestants (
           id,
           name,
-          slug
+          slug,
+          image_url
         )
       )
     `);
@@ -96,6 +98,31 @@ export default async function LiveLeaderboardSnippet() {
                       >
                         {rank}
                       </span>
+
+                      {/* Avatar */}
+                      <div className="flex-shrink-0">
+                        {contestant.image_url ? (
+                          <div className={`w-8 h-8 rounded-full overflow-hidden border-2 flex items-center justify-center ${rank === 1 ? "border-nacos-green/30" : "border-gray-100"}`}>
+                            <Image 
+                              src={contestant.image_url} 
+                              alt={contestant.name} 
+                              width={32} 
+                              height={32} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center font-heading font-bold text-[10px] ${
+                              rank === 1
+                                ? "bg-nacos-green text-white"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {((contestant.name.split(" ")[0]?.[0] || "") + (contestant.name.split(" ")[1]?.[0] || "")).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Name + bar */}
                       <div className="flex-1 min-w-0">

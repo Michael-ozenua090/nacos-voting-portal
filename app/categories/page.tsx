@@ -25,7 +25,13 @@ export default async function CategoriesPage() {
       description,
       nominations (
         id,
-        current_votes
+        current_votes,
+        contestants (
+          id,
+          name,
+          slug,
+          image_url
+        )
       )
     `);
 
@@ -35,17 +41,27 @@ export default async function CategoriesPage() {
   const categoriesWithStats: CategoryWithStats[] = validCategories.map(
     (cat) => {
       const nominations = cat.nominations || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalVotes = nominations.reduce(
-        (sum: number, nom: { current_votes: number | null }) =>
+        (sum: number, nom: any) =>
           sum + (nom.current_votes || 0),
         0
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nominees = nominations.map((nom: any) => ({
+        id: nom.contestants?.id || '',
+        name: nom.contestants?.name || 'Unknown',
+        slug: nom.contestants?.slug || '',
+        image_url: nom.contestants?.image_url || null,
+      })).filter((n: any) => n.id);
+
       return {
         id: cat.id,
         name: cat.name,
         description: cat.description ?? null,
         nomineeCount: nominations.length,
         totalVotes,
+        nominees,
       };
     }
   );

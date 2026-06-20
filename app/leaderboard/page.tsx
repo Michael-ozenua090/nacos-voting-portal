@@ -36,7 +36,8 @@ export default async function LeaderboardPage() {
         contestants (
           id,
           name,
-          slug
+          slug,
+          image_url
         )
       )
     `);
@@ -88,6 +89,7 @@ export default async function LeaderboardPage() {
           id: contestant.id,
           name: contestant.name,
           slug: contestant.slug,
+          image_url: contestant.image_url,
           totalVotes: votes,
           categoryCount: 1,
         });

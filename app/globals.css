@@ -39,6 +39,15 @@
 ::-webkit-scrollbar-thumb { background: #008751; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #006b3f; }
 
+/* ─── Hide scrollbar utility ────────────────────────────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ─── Smooth scroll ──────────────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 

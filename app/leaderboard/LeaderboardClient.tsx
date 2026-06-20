@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Trophy, Users, ArrowUpDown, ArrowDownAZ } from "lucide-react";
 import VoteProgressBar from "@/components/ui/VoteProgressBar";
 
@@ -16,6 +17,7 @@ export type NomineeStat = {
   id: string;
   name: string;
   slug: string;
+  image_url?: string | null;
   totalVotes: number;
   categoryCount: number;
 };
@@ -229,14 +231,28 @@ export default function LeaderboardClient({
                     </span>
 
                     {/* Avatar */}
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center font-heading font-bold text-xs flex-shrink-0 ${
-                        rank === 1
-                          ? "bg-nacos-gold text-gray-900"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {initials.toUpperCase()}
+                    <div className="flex-shrink-0">
+                      {nom.image_url ? (
+                        <div className={`w-10 h-10 rounded-full overflow-hidden border-2 flex items-center justify-center ${rank === 1 ? "border-nacos-gold" : "border-gray-100"}`}>
+                          <Image 
+                            src={nom.image_url} 
+                            alt={nom.name} 
+                            width={40} 
+                            height={40} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-heading font-bold text-xs ${
+                            rank === 1
+                              ? "bg-nacos-gold text-gray-900"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {initials.toUpperCase()}
+                        </div>
+                      )}
                     </div>
 
                     {/* Details */}
