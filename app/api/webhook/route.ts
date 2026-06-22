@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Fetch the target pending record from your database
     const { data: existingTx, error: txError } = await supabase
       .from("transactions")
-      .select("status, nomination_id, number_of_votes")
+      .select("status, nomination_id, number_of_votes, amount")
       .eq("tx_ref", txRef)
       .single();
 
@@ -75,6 +75,35 @@ export async function POST(req: NextRequest) {
       console.log("==================================\n");
       revalidatePath("/", "layout");
       return NextResponse.json({ message: `Webhook processed (${status})` }, { status: 200 });
+    }
+
+    // VERIFY WITH FLUTTERWAVE DIRECTLY (Security Patch)
+    const verifyUrl = `https://api.flutterwave.com/v3/transactions/${flwId}/verify`;
+    const verifyResponse = await fetch(verifyUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const verifyData = await verifyResponse.json();
+
+    if (!verifyResponse.ok || verifyData.status !== "success" || verifyData.data.status !== "successful") {
+      console.log(`🔴 VERIFICATION FAILED: Transaction ${flwId} is not successful on Flutterwave's end.`);
+      return NextResponse.json({ error: "Transaction verification failed" }, { status: 400 });
+    }
+
+    // Amount & Currency Validation
+    const expectedAmount = existingTx.amount;
+    const paidAmount = verifyData.data.amount;
+    const currency = verifyData.data.currency;
+
+    if (paidAmount < expectedAmount || currency !== "NGN") {
+       console.log(`🔴 FRAUD ALERT: Underpayment or wrong currency. Expected ₦${expectedAmount}, got ${currency} ${paidAmount}`);
+       // Update DB status to 'failed' or 'fraud' here instead of successful
+       await supabase.from("transactions").update({ status: "failed", flw_ref: flwId }).eq("tx_ref", txRef);
+       return NextResponse.json({ error: "Invalid payment amount" }, { status: 400 });
     }
 
     console.log("固定 8. UPDATING TRANSACTION STATUS TO SUCCESSFUL...");
