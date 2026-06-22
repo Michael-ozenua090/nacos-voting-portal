@@ -79,7 +79,7 @@ export default function CategoriesClientPage({
       </div>
 
       {/* Categories list */}
-      <div className="flex flex-col gap-y-8 mt-6">
+      <div className="flex flex-col gap-10 mt-6">
         {sorted.map((category) => (
           <CategorySliderRow key={category.id} category={category} />
         ))}
