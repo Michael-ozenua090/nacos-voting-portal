@@ -94,11 +94,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Transaction verification failed" }, { status: 400 });
     }
 
-    // Amount & Currency Validation
+    // 🔒 STRICT ANTI-FRAUD CHECKS
     const expectedAmount = existingTx.amount;
     const paidAmount = verifyData.data.amount;
     const currency = verifyData.data.currency;
+    const verifiedTxRef = verifyData.data.tx_ref; // Extract the true tx_ref from Flutterwave
 
+    // 1. Prevent Replay Attacks (Business Logic Abuse)
+    if (verifiedTxRef !== txRef) {
+       console.log(`🔴 FRAUD ALERT: TX Ref mismatch. Payload claimed ${txRef}, but Flutterwave verified ${verifiedTxRef}`);
+       return NextResponse.json({ error: "Transaction reference mismatch" }, { status: 400 });
+    }
+
+    // 2. Prevent Amount Bypass
     if (paidAmount < expectedAmount || currency !== "NGN") {
        console.log(`🔴 FRAUD ALERT: Underpayment or wrong currency. Expected ₦${expectedAmount}, got ${currency} ${paidAmount}`);
        // Update DB status to 'failed' or 'fraud' here instead of successful
@@ -106,7 +114,7 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ error: "Invalid payment amount" }, { status: 400 });
     }
 
-    console.log("固定 8. UPDATING TRANSACTION STATUS TO SUCCESSFUL...");
+    console.log("🟢 VALIDATION PASSED. UPDATING TRANSACTION STATUS TO SUCCESSFUL...");
     const { error: updateError } = await supabase
       .from("transactions")
       .update({ status: "successful", flw_ref: flwId })
