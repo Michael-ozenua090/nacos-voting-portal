@@ -7,6 +7,8 @@ import {
   Trophy,
   User,
   Radio,
+  Zap,
+  TrendingUp,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import StatCard from "@/components/admin/StatCard";
@@ -43,24 +45,33 @@ export default async function AdminDashboardPage() {
 
   // --- Live Metric Queries ---
 
-  // 1. Total Revenue — sum of successful transaction amounts
-  const { data: revenueRows } = await supabase
+  // 1. Combined transaction query — fetches amount, votes, and dummy flag
+  //    in a single round-trip so we can derive all vote/revenue metrics.
+  const { data: allTxRows } = await supabase
     .from("transactions")
-    .select("amount")
+    .select("amount, number_of_votes, is_dummy")
     .eq("status", "successful");
-  const totalRevenue = (revenueRows || []).reduce(
-    (sum: number, row: { amount: number }) => sum + (row.amount || 0),
-    0
-  );
 
-  // 2. Total Votes Cast — sum of successful transaction vote counts
-  const { data: voteRows } = await supabase
-    .from("transactions")
-    .select("number_of_votes")
-    .eq("status", "successful");
-  const totalVotes = (voteRows || []).reduce(
-    (sum: number, row: { number_of_votes: number }) => sum + (row.number_of_votes || 0),
-    0
+  type TxRow = { amount: number | null; number_of_votes: number | null; is_dummy: boolean | null };
+
+  const { totalRevenue, realVotes, dummyVotes, totalVotes } = (
+    allTxRows as TxRow[] | null ?? []
+  ).reduce(
+    (acc, tx) => {
+      const amt   = tx.amount          ?? 0;
+      const votes = tx.number_of_votes ?? 0;
+      const dummy = tx.is_dummy === true;
+
+      acc.totalRevenue += amt;           // dummy amount is 0 → revenue always accurate
+      acc.totalVotes   += votes;
+      if (dummy) {
+        acc.dummyVotes += votes;
+      } else {
+        acc.realVotes  += votes;
+      }
+      return acc;
+    },
+    { totalRevenue: 0, realVotes: 0, dummyVotes: 0, totalVotes: 0 }
   );
 
   // 3. Contestant Count
@@ -131,11 +142,14 @@ export default async function AdminDashboardPage() {
   const initials = ((nameParts[0]?.[0] || "") + (nameParts[1]?.[0] || "")).toUpperCase();
 
   // 8. Granular Analytics: Revenue & Votes by Category / Nominee
+  //    We reuse allTxRows but need the relational join, so a second targeted
+  //    query with nominations join is still required here.
   const { data: successfulTxns } = await supabase
     .from("transactions")
     .select(`
       amount,
       number_of_votes,
+      is_dummy,
       nominations (
         contestants (name),
         categories (name)
@@ -143,24 +157,27 @@ export default async function AdminDashboardPage() {
     `)
     .eq("status", "successful");
 
-  const revByCat: Record<string, { votes: number; amount: number }> = {};
-  const revByNom: Record<string, { category: string; votes: number; amount: number }> = {};
+  const revByCat: Record<string, { votes: number; realVotes: number; amount: number }> = {};
+  const revByNom: Record<string, { category: string; votes: number; realVotes: number; amount: number }> = {};
 
   for (const txn of successfulTxns || []) {
-    const amount = txn.amount || 0;
-    const votes = txn.number_of_votes || 0;
+    const amount  = txn.amount || 0;
+    const votes   = txn.number_of_votes || 0;
+    const isDummy = (txn as any).is_dummy === true;
     // @ts-ignore
     const catName = txn.nominations?.categories?.name || "Unknown Category";
     // @ts-ignore
     const nomName = txn.nominations?.contestants?.name || "Unknown Nominee";
 
-    if (!revByCat[catName]) revByCat[catName] = { votes: 0, amount: 0 };
-    revByCat[catName].votes += votes;
-    revByCat[catName].amount += amount;
+    if (!revByCat[catName]) revByCat[catName] = { votes: 0, realVotes: 0, amount: 0 };
+    revByCat[catName].votes     += votes;
+    revByCat[catName].amount    += amount;  // dummy amount is 0 → correct
+    if (!isDummy) revByCat[catName].realVotes += votes;
 
-    if (!revByNom[nomName]) revByNom[nomName] = { category: catName, votes: 0, amount: 0 };
-    revByNom[nomName].votes += votes;
-    revByNom[nomName].amount += amount;
+    if (!revByNom[nomName]) revByNom[nomName] = { category: catName, votes: 0, realVotes: 0, amount: 0 };
+    revByNom[nomName].votes     += votes;
+    revByNom[nomName].amount    += amount;
+    if (!isDummy) revByNom[nomName].realVotes += votes;
   }
 
   const sortedCatStats = Object.entries(revByCat).sort((a, b) => b[1].amount - a[1].amount);
@@ -192,7 +209,7 @@ export default async function AdminDashboardPage() {
                 {formatNaira(totalRevenue)}
               </p>
               <p className="text-xs font-body text-gray-400 mt-1 flex items-center gap-1">
-                From {(revenueRows || []).length} successful payments
+                From {(allTxRows || []).length} successful payments
               </p>
             </StatCard>
           )}
@@ -259,6 +276,61 @@ export default async function AdminDashboardPage() {
             </p>
           </StatCard>
         </div>
+
+        {/* Superadmin: Real vs. Dummy vote breakdown */}
+        {isSuperAdmin && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            {/* Real Votes */}
+            <div className="bg-white rounded-2xl border border-nacos-green/20 shadow-sm p-5">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-sm font-body font-medium text-gray-500">Real Votes</p>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-nacos-green/10">
+                  <TrendingUp size={20} className="text-nacos-green" />
+                </div>
+              </div>
+              <p className="font-heading font-bold text-3xl text-gray-900">
+                {formatVotes(realVotes)}
+              </p>
+              <p className="text-xs font-body text-gray-400 mt-1">
+                Genuine paid votes only
+              </p>
+            </div>
+
+            {/* Dummy Votes */}
+            <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-sm font-body font-medium text-gray-500">Dummy Votes</p>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-orange-50">
+                  <Zap size={20} className="text-orange-500 fill-orange-500" />
+                </div>
+              </div>
+              <p className="font-heading font-bold text-3xl text-orange-500">
+                {formatVotes(dummyVotes)}
+              </p>
+              <p className="text-xs font-body text-gray-400 mt-1">
+                System-injected momentum
+              </p>
+            </div>
+
+            {/* Dummy Percentage */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-sm font-body font-medium text-gray-500">Injection Rate</p>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-50">
+                  <Vote size={20} className="text-purple-500" />
+                </div>
+              </div>
+              <p className="font-heading font-bold text-3xl text-purple-600">
+                {totalVotes > 0
+                  ? `${((dummyVotes / totalVotes) * 100).toFixed(1)}%`
+                  : "0%"}
+              </p>
+              <p className="text-xs font-body text-gray-400 mt-1">
+                Dummy share of all votes
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Granular Analytics Grids */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

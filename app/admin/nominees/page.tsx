@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Users, AlertTriangle, CheckCircle2, Trash2, Search } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/client";
+import InjectVotesForm from "@/components/admin/InjectVotesForm";
 
 export default function AdminNomineesPage() {
   const supabase = createClient();
@@ -515,13 +516,20 @@ export default function AdminNomineesPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleDeleteNomination(nom.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                            title="Delete Nomination"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex flex-col items-end gap-2">
+                            <button
+                              onClick={() => handleDeleteNomination(nom.id)}
+                              className="text-gray-400 hover:text-red-500 transition-colors"
+                              title="Delete Nomination"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <InjectVotesForm
+                              nominationId={nom.id}
+                              nomineeName={contestant.name || "Unknown"}
+                              onSuccess={fetchData}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
