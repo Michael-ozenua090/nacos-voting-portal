@@ -10,6 +10,23 @@ export async function injectDummyVotes(
   try {
     const supabase = await createClient();
 
+    // ── RBAC Guard ────────────────────────────────────────────────────────────
+    // Verify the caller is the Superadmin before touching any data.
+    // This is a server-side check and cannot be bypassed from the client.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+
+    if (!user || !superAdminEmail || user.email !== superAdminEmail) {
+      return {
+        success: false,
+        error: "Unauthorized: Superadmin access required.",
+      };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // 1. Fetch current votes from the nomination row
     const { data: nomination, error: fetchError } = await supabase
       .from("nominations")

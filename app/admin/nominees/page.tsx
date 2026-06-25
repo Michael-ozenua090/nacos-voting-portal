@@ -19,6 +19,9 @@ export default function AdminNomineesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // RBAC: resolved from the active session on mount
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
   // Form State
   const [isExisting, setIsExisting] = useState(false);
   const [selectedContestantId, setSelectedContestantId] = useState("");
@@ -42,6 +45,12 @@ export default function AdminNomineesPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+
+    // Resolve superadmin status from the live session on every data refresh
+    const { data: { user } } = await supabase.auth.getUser();
+    const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+    setIsSuperAdmin(!!user && !!superAdminEmail && user.email === superAdminEmail);
+
     
     // Fetch categories for dropdown
     const { data: catData } = await supabase
@@ -524,11 +533,14 @@ export default function AdminNomineesPage() {
                             >
                               <Trash2 size={16} />
                             </button>
-                            <InjectVotesForm
-                              nominationId={nom.id}
-                              nomineeName={contestant.name || "Unknown"}
-                              onSuccess={fetchData}
-                            />
+                            {/* Superadmin-only: dummy vote injection */}
+                            {isSuperAdmin && (
+                              <InjectVotesForm
+                                nominationId={nom.id}
+                                nomineeName={contestant.name || "Unknown"}
+                                onSuccess={fetchData}
+                              />
+                            )}
                           </div>
                         </td>
                       </tr>
