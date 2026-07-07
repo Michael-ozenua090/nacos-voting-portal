@@ -58,6 +58,7 @@ export default function CategorySliderRow({ category }: { category: CategoryForS
                       alt={nominee.name}
                       fill
                       className="object-cover rounded-xl"
+                      unoptimized
                     />
                   ) : (
                     <User size={32} className="text-gray-300" />
