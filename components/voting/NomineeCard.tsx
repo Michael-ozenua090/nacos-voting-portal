@@ -64,6 +64,7 @@ export default function NomineeCard({
             className="object-cover object-top group-hover:scale-[1.02] transition-transform duration-300"
             sizes="(max-width: 768px) 100vw, 50vw"
             priority={priority}
+            unoptimized
           />
           {/* Vote count badge */}
           <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm">

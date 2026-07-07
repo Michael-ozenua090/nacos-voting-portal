@@ -76,6 +76,7 @@ export default function NomineeProfileClient({
                 className="object-cover object-top"
                 sizes="112px"
                 priority
+                unoptimized
               />
             </div>
 
