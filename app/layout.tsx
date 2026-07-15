@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import TopAppBar from "@/components/layout/TopAppBar";
 import "./globals.css";
 
@@ -53,6 +54,7 @@ export default function RootLayout({
         <div className="flex-1 flex flex-col">
           {children}
         </div>
+        <SpeedInsights />
       </body>
     </html>
   );
