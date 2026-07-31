@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export interface SystemSettings {
   id: string;
@@ -32,4 +33,48 @@ export async function getSettings(): Promise<SystemSettings> {
     vote_price_naira: price,
     cost_per_vote: price, // convenience alias
   };
+}
+
+export interface SaveSettingsPayload {
+  voting_open: boolean;
+  vote_price_naira: number;
+  /** Existing row id — if provided the row is updated, otherwise inserted. */
+  id?: string | null;
+}
+
+/**
+ * Persists the global system settings and busts the home page cache
+ * so the hero badge price updates immediately for all users.
+ */
+export async function saveSettings(payload: SaveSettingsPayload): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+
+  let dbError;
+
+  if (payload.id) {
+    // Update existing row
+    const { error } = await supabase
+      .from("system_settings")
+      .update({
+        voting_open: payload.voting_open,
+        vote_price_naira: payload.vote_price_naira,
+      })
+      .eq("id", payload.id);
+    dbError = error;
+  } else {
+    // Insert first-ever row
+    const { error } = await supabase
+      .from("system_settings")
+      .insert([{ voting_open: payload.voting_open, vote_price_naira: payload.vote_price_naira }]);
+    dbError = error;
+  }
+
+  if (dbError) {
+    return { error: dbError.message };
+  }
+
+  // Bust Next.js cache so the home page hero badge shows the new price immediately
+  revalidatePath("/");
+
+  return { error: null };
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Settings, Save, AlertTriangle, CheckCircle2, Radio } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import { createClient } from "@/utils/supabase/client";
+import { saveSettings } from "@/app/admin/actions/settings";
 
 export default function AdminSettingsPage() {
   const supabase = createClient();
@@ -45,30 +46,16 @@ export default function AdminSettingsPage() {
     setMessage(null);
     setIsSaving(true);
 
-    let error;
-
-    if (settingsId) {
-      // Update existing row
-      const { error: updateError } = await supabase
-        .from("system_settings")
-        .update({
-          voting_open: isVotingOpen,
-          vote_price_naira: votePrice,
-        })
-        .eq("id", settingsId);
-      error = updateError;
-    } else {
-      // Fallback if table was completely empty for some reason
-      const { error: insertError } = await supabase
-        .from("system_settings")
-        .insert([{ voting_open: isVotingOpen, vote_price_naira: votePrice }]);
-      error = insertError;
-    }
+    const { error } = await saveSettings({
+      voting_open: isVotingOpen,
+      vote_price_naira: votePrice,
+      id: settingsId,
+    });
 
     setIsSaving(false);
 
     if (error) {
-      setMessage({ type: "error", text: `Update failed: ${error.message}` });
+      setMessage({ type: "error", text: `Update failed: ${error}` });
     } else {
       setMessage({ type: "success", text: "System settings updated successfully." });
     }

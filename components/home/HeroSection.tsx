@@ -1,7 +1,12 @@
 import Image from "next/image";
 import LivePulse from "@/components/ui/LivePulse";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  /** Cost per vote in Naira, sourced from global settings. Defaults to 100. */
+  costPerVote?: number;
+}
+
+export default function HeroSection({ costPerVote = 100 }: HeroSectionProps) {
   return (
     <section className="relative mx-4 mt-4 rounded-3xl overflow-hidden shadow-xl min-h-[300px] flex flex-col justify-end">
       {/* Background image */}
@@ -34,7 +39,7 @@ export default function HeroSection() {
         <div className="inline-flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-lg">
           <span className="text-xl">💳</span>
           <span className="font-heading font-bold text-gray-900 text-base">
-            1 Vote = ₦100
+            1 Vote = ₦{costPerVote.toLocaleString("en-NG")}
           </span>
         </div>
       </div>
