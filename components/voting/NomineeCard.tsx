@@ -29,6 +29,8 @@ interface NomineeCardProps {
   votes: number;
   rank?: number;
   priority?: boolean;
+  /** Cost per vote in Naira. Fetched from global settings by the parent page. */
+  costPerVote?: number;
 }
 
 export default function NomineeCard({
@@ -38,6 +40,7 @@ export default function NomineeCard({
   votes,
   rank,
   priority = false,
+  costPerVote = 100,
 }: NomineeCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -153,6 +156,7 @@ export default function NomineeCard({
         nominee={{ name: nominee.name, imageUrl: nominee.imageUrl || fallbackImage }}
         category={{ name: category.name }}
         nominationId={nominationId}
+        costPerVote={costPerVote}
       />
     </>
   );

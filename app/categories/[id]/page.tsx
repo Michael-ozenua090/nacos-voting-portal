@@ -31,12 +31,13 @@ export default async function CategoryPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // Fetch system settings to check if voting is live
+  // Fetch system settings to check if voting is live and get the cost per vote
   const { data: settings } = await supabase
     .from("system_settings")
-    .select("voting_open")
+    .select("voting_open, vote_price_naira")
     .single();
   const isLive = settings?.voting_open ?? false;
+  const costPerVote: number = settings?.vote_price_naira ?? 100;
 
   // Fetch the category
   const { data: category } = await supabase
@@ -120,6 +121,7 @@ export default async function CategoryPage({ params }: Props) {
                 votes={nom.current_votes || 0}
                 rank={idx + 1}
                 priority={idx < 4}
+                costPerVote={costPerVote}
               />
             );
           })}

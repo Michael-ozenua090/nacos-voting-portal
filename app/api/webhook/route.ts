@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getSettings } from "@/app/admin/actions/settings";
 
 export async function POST(req: NextRequest) {
   try {
@@ -95,7 +96,12 @@ export async function POST(req: NextRequest) {
     }
 
     // 🔒 STRICT ANTI-FRAUD CHECKS
-    const expectedAmount = existingTx.amount;
+    const { number_of_votes: numVotes } = existingTx;
+
+    // Dynamically recalculate the expected amount from live settings
+    const settings = await getSettings();
+    const expectedAmount = Number(numVotes) * settings.cost_per_vote;
+
     const paidAmount = verifyData.data.amount;
     const currency = verifyData.data.currency;
     const verifiedTxRef = verifyData.data.tx_ref; // Extract the true tx_ref from Flutterwave
@@ -108,7 +114,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Prevent Amount Bypass
     if (paidAmount < expectedAmount || currency !== "NGN") {
-       console.log(`🔴 FRAUD ALERT: Underpayment or wrong currency. Expected ₦${expectedAmount}, got ${currency} ${paidAmount}`);
+       console.log(`🔴 FRAUD ALERT: Underpayment or wrong currency. Expected ₦${expectedAmount} (${numVotes} vote(s) × ₦${settings.cost_per_vote}), got ${currency} ${paidAmount}`);
        // Update DB status to 'failed' or 'fraud' here instead of successful
        await supabase.from("transactions").update({ status: "failed", flw_ref: flwId }).eq("tx_ref", txRef);
        return NextResponse.json({ error: "Invalid payment amount" }, { status: 400 });

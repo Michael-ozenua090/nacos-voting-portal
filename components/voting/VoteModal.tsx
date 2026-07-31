@@ -16,6 +16,8 @@ export interface VoteModalProps {
     name: string;
   };
   nominationId: string;
+  /** Cost per vote in Naira, sourced from global settings. Defaults to 100. */
+  costPerVote?: number;
 }
 
 const formatCurrency = (amount: number) => {
@@ -26,7 +28,6 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const VOTE_PRICE = 100; // Default UI fallback if API uses something else, or we could fetch it
 
 export default function VoteModal({
   isOpen,
@@ -34,6 +35,7 @@ export default function VoteModal({
   nominee,
   category,
   nominationId,
+  costPerVote = 100,
 }: VoteModalProps) {
   const [voteCount, setVoteCount] = useState<number | "">(1);
   const [voterName, setVoterName] = useState("");
@@ -44,7 +46,7 @@ export default function VoteModal({
   if (!isOpen) return null;
 
   const safeVoteCount = typeof voteCount === "number" ? voteCount : (parseInt(voteCount as string, 10) || 1);
-  const totalCost = safeVoteCount * VOTE_PRICE;
+  const totalCost = safeVoteCount * costPerVote;
 
   const increment = () => setVoteCount((c) => (typeof c === "number" ? c : (parseInt(c as string, 10) || 1)) + 1);
   const decrement = () => setVoteCount((c) => Math.max((typeof c === "number" ? c : (parseInt(c as string, 10) || 1)) - 1, 1));
