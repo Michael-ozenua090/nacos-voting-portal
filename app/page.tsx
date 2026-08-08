@@ -4,13 +4,11 @@ import LiveLeaderboardSnippet from "@/components/home/LiveLeaderboardSnippet";
 import CategoryBentoGrid from "@/components/home/CategoryBentoGrid";
 import HomeSearchInputClient from "@/components/home/HomeSearchInputClient";
 import { Suspense } from "react";
-import { getSettings } from "@/app/admin/actions/settings";
 
-// Always fetch fresh data so the hero price badge reflects admin changes immediately
+// Static archival home — no settings fetch needed.
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const settings = await getSettings();
   return (
     <>
       <main className=" w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -19,7 +17,7 @@ export default async function HomePage() {
           
           <div className="lg:col-span-2 space-y-8">
             {/* Hero */}
-            <HeroSection costPerVote={settings.cost_per_vote} />
+            <HeroSection />
 
             {/* Search bar */}
             <Suspense fallback={<div className="h-20" />}>

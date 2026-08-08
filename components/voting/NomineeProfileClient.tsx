@@ -1,11 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { Share2, Monitor } from "lucide-react";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
-import VoteModal from "@/components/voting/VoteModal";
 
 // Formats a large number (e.g., 1200 -> 1.2k)
 export const formatVotes = (votes: number): string => {
@@ -41,15 +39,6 @@ export default function NomineeProfileClient({
   nominee: NomineeProps;
   categories: CategoryProps[];
 }) {
-  const [modal, setModal] = useState<VoteModalState>({
-    open: false,
-    category: null,
-  });
-
-  const openModal = (category: CategoryProps) => {
-    setModal({ open: true, category });
-  };
-
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -141,14 +130,17 @@ export default function NomineeProfileClient({
                     </div>
                   </div>
 
-                  {/* Vote button */}
-                  <button
-                    id={`nominee-vote-${category.categoryId}`}
-                    onClick={() => openModal(category)}
-                    className="w-full border border-gray-200 hover:border-nacos-green hover:bg-nacos-green hover:text-white text-nacos-green font-heading font-semibold py-2.5 rounded-xl text-sm transition-all duration-200"
+                  {/* Voting Closed badge */}
+                  <div
+                    aria-label="Voting is closed"
+                    className="w-full bg-gray-100 text-gray-400 font-heading font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none"
                   >
-                    Vote Now
-                  </button>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Voting Closed
+                  </div>
                 </div>
               </div>
             );
@@ -162,17 +154,6 @@ export default function NomineeProfileClient({
       </main>
       <Footer />
       <BottomNav />
-
-      {/* VoteModal */}
-      {modal.category && (
-        <VoteModal
-          isOpen={modal.open}
-          onClose={() => setModal({ open: false, category: null })}
-          nominee={{ name: nominee.name, imageUrl: nominee.imageUrl || fallbackImage }}
-          category={{ name: modal.category.name }}
-          nominationId={modal.category.nominationId}
-        />
-      )}
     </>
   );
 }

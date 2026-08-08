@@ -162,8 +162,8 @@ export default function LeaderboardClient({
                         </Link>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {rank === 1 && cat.totalVotes > 0 && (
-                            <span className="text-[10px] font-bold font-body text-nacos-green bg-nacos-green/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                              HOTTEST
+                            <span className="text-[10px] font-bold font-body text-nacos-gold bg-nacos-gold/15 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                              🏆 WINNER
                             </span>
                           )}
                           <span className="font-heading font-bold text-sm tabular-nums text-nacos-green">
@@ -266,8 +266,8 @@ export default function LeaderboardClient({
                             {nom.name}
                           </Link>
                           {rank === 1 && nom.totalVotes > 0 && (
-                            <span className="text-[10px] font-bold font-body text-nacos-green bg-nacos-green/10 px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
-                              LEADING
+                            <span className="text-[10px] font-bold font-body text-nacos-gold bg-nacos-gold/15 px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
+                              🏆 WINNER
                             </span>
                           )}
                         </div>

@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/layout/Footer";
-import LivePulse from "@/components/ui/LivePulse";
 import UrlCleaner from "@/components/ui/UrlCleaner";
 import { createClient } from "@/utils/supabase/server";
 import LeaderboardClient, {
@@ -9,12 +8,12 @@ import LeaderboardClient, {
   type NomineeStat,
 } from "./LeaderboardClient";
 
-// Always fetch fresh vote data — critical for a live voting app
+// Static archival page — results are final.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Standings Leaderboard",
-  description: "Live vote standings across all NACOS Award Night categories.",
+  title: "Final Results — NACOS Awards 2026",
+  description: "The official final vote standings for the NACOS Award Night 2026. Voting has concluded.",
 };
 
 const formatVotes = (votes: number): string => {
@@ -45,8 +44,6 @@ export default async function LeaderboardPage() {
   const validCategories = categories || [];
 
   // ── Aggregate: Total votes & total nominees per category ──────────────────
-  let totalVotes = 0;
-
   const categoryStats: CategoryStat[] = validCategories.map((cat) => {
     const nominations = cat.nominations || [];
     const catTotal = nominations.reduce(
@@ -54,7 +51,6 @@ export default async function LeaderboardPage() {
       (sum: number, nom: any) => sum + (nom.current_votes || 0),
       0
     );
-    totalVotes += catTotal;
     return {
       id: cat.id,
       name: cat.name,
@@ -107,36 +103,19 @@ export default async function LeaderboardPage() {
       </Suspense>
 
       <main className="w-full max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10">
-        {/* Live badge */}
-        <div className="flex items-center gap-3 mb-2">
-          <LivePulse color="red" label="Live Updates" />
-          <span className="text-xs text-gray-400 font-body">
-            Last updated: Just now
-          </span>
-        </div>
-
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-nacos-green mb-5">
-          Standings Leaderboard
+          Final Results — NACOS Awards 2026
         </h1>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p className="text-[10px] font-bold font-body uppercase tracking-widest text-gray-400 mb-1">
-              Total Votes Cast
-            </p>
-            <p className="font-heading font-bold text-2xl text-nacos-green">
-              {formatVotes(totalVotes)}
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p className="text-[10px] font-bold font-body uppercase tracking-widest text-gray-400 mb-1">
-              Most Active Category
-            </p>
-            <p className="font-heading font-bold text-sm text-gray-900 leading-tight">
-              {mostActiveCategory.name}
-            </p>
-          </div>
+        {/* Celebratory archival banner */}
+        <div className="bg-gradient-to-r from-nacos-green/10 via-nacos-gold/10 to-nacos-green/10 border border-nacos-gold/30 rounded-2xl px-5 py-4 mb-8 flex items-center gap-4">
+          <span className="text-3xl flex-shrink-0" aria-hidden="true">🏆</span>
+          <p className="font-body text-sm text-gray-800 leading-relaxed">
+            <span className="font-heading font-bold text-nacos-green block mb-0.5">
+              Final Official Results
+            </span>
+            The 2026 Awards have concluded. Thank you to everyone who participated.
+          </p>
         </div>
 
         {/* Client component handles sort state + renders both sections */}

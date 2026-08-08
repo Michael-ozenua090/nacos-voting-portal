@@ -4,7 +4,6 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Footer from "@/components/layout/Footer";
 import NomineeCard from "@/components/voting/NomineeCard";
-import LivePulse from "@/components/ui/LivePulse";
 import { createClient } from "@/utils/supabase/server";
 
 interface Props {
@@ -31,13 +30,8 @@ export default async function CategoryPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // Fetch system settings to check if voting is live and get the cost per vote
-  const { data: settings } = await supabase
-    .from("system_settings")
-    .select("voting_open, vote_price_naira")
-    .single();
-  const isLive = settings?.voting_open ?? false;
-  const costPerVote: number = settings?.vote_price_naira ?? 100;
+  // Voting is permanently closed — no settings fetch needed.
+  // Data is read-only from this point on.
 
   // Fetch the category
   const { data: category } = await supabase
@@ -85,7 +79,9 @@ export default async function CategoryPage({ params }: Props) {
           <h1 className="font-heading font-bold text-2xl sm:text-3xl text-gray-900 leading-tight max-w-[70%]">
             {category.name}
           </h1>
-          {isLive && <LivePulse color="red" label="LIVE" />}
+          <span className="text-[10px] font-bold font-body text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            CLOSED
+          </span>
         </div>
         <p className="text-gray-500 font-body text-sm mb-6">
           {category.description || "Vote for your favorite nominee in this category!"}
@@ -121,7 +117,6 @@ export default async function CategoryPage({ params }: Props) {
                 votes={nom.current_votes || 0}
                 rank={idx + 1}
                 priority={idx < 4}
-                costPerVote={costPerVote}
               />
             );
           })}

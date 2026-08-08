@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Share2 } from "lucide-react";
-import { useState } from "react";
-import VoteModal from "@/components/voting/VoteModal";
 
 const formatVotes = (votes: number): string => {
   if (votes >= 1000000) return (votes / 1000000).toFixed(1) + "m";
@@ -29,8 +27,6 @@ interface NomineeCardProps {
   votes: number;
   rank?: number;
   priority?: boolean;
-  /** Cost per vote in Naira. Fetched from global settings by the parent page. */
-  costPerVote?: number;
 }
 
 export default function NomineeCard({
@@ -40,9 +36,7 @@ export default function NomineeCard({
   votes,
   rank,
   priority = false,
-  costPerVote = 100,
 }: NomineeCardProps) {
-  const [modalOpen, setModalOpen] = useState(false);
 
   const handleShare = async () => {
     const url = `${window.location.origin}/nominee/${nominee.slug}`;
@@ -127,12 +121,10 @@ export default function NomineeCard({
           <p className="text-xs text-gray-400 font-body mb-3">
             {nominee.level} · {nominee.department}
           </p>
-          <button
-            id={`vote-btn-${nominee.slug}`}
-            onClick={() => setModalOpen(true)}
-            className="w-full bg-nacos-green hover:bg-nacos-dark text-white font-heading font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-sm shadow-nacos-green/20"
+          <div
+            aria-label="Voting is closed"
+            className="w-full bg-gray-100 text-gray-400 font-heading font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none"
           >
-            Vote Now
             <svg
               width="14"
               height="14"
@@ -144,20 +136,13 @@ export default function NomineeCard({
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M5 12h14M12 5l7 7-7 7" />
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-          </button>
+            Voting Closed
+          </div>
         </div>
       </div>
-
-      <VoteModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        nominee={{ name: nominee.name, imageUrl: nominee.imageUrl || fallbackImage }}
-        category={{ name: category.name }}
-        nominationId={nominationId}
-        costPerVote={costPerVote}
-      />
     </>
   );
 }
